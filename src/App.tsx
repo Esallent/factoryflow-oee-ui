@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Record from "./pages/Record";
-import History from "./pages/History";
+import HistoryPage from "./pages/HistoryPage";
 import LinesPage from "./pages/LinesPage";
 import ProductionRecordForm from "./pages/ProductionRecordForm";
 import NotFound from "./pages/NotFound";
@@ -24,7 +24,7 @@ const App = () => (
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/record" element={<Layout><ProductionRecordForm /></Layout>} />
-          <Route path="/history" element={<Layout><History /></Layout>} />
+          <Route path="/history" element={<Layout><HistoryPage /></Layout>} />
           <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
