@@ -5,6 +5,9 @@ export const translations = {
     record: "Record",
     history: "History",
     lines: "Lines & Equipment",
+    demo: "Demo",
+    demo_schaeffler: "Schaeffler México",
+    demo_spada: "L.V. Spada",
     
     // Common actions
     save: "Save",
@@ -89,6 +92,9 @@ export const translations = {
     record: "Registros",
     history: "Historial",
     lines: "Líneas y Equipos",
+    demo: "Demo",
+    demo_schaeffler: "Schaeffler México",
+    demo_spada: "L.V. Spada",
     
     // Common actions
     save: "Guardar",
