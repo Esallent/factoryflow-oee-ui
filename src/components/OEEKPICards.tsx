@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Activity, TrendingUp, CheckCircle2, Target } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface OEEMetrics {
   availability: number;
@@ -34,6 +35,7 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
       icon: Activity,
       color: "text-blue-400",
       bgColor: "bg-blue-500/10",
+      tooltip: "Availability = Operating Time / Planned Production Time",
     },
     {
       label: "Performance",
@@ -41,6 +43,7 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
       icon: TrendingUp,
       color: "text-purple-400",
       bgColor: "bg-purple-500/10",
+      tooltip: "Performance = (Ideal Cycle Time × Total Count) / Operating Time",
     },
     {
       label: "Quality",
@@ -48,72 +51,85 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
       icon: CheckCircle2,
       color: "text-green-400",
       bgColor: "bg-green-500/10",
+      tooltip: "Quality = Good Count / Total Count",
     },
   ];
 
   return (
-    <div className="space-y-4">
-      {kpiData.map((kpi) => {
-        const Icon = kpi.icon;
-        return (
-          <Card
-            key={kpi.label}
-            className="p-4 bg-sidebar border-border hover:border-primary/30 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
-                  <Icon className={`h-5 w-5 ${kpi.color}`} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{kpi.label}</p>
-                  <p className="text-2xl font-bold">{kpi.value.toFixed(1)}%</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        );
-      })}
+    <TooltipProvider>
+      <div className="space-y-4">
+        {kpiData.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <Tooltip key={kpi.label}>
+              <TooltipTrigger asChild>
+                <Card className="p-4 bg-sidebar border-border hover:border-primary/30 transition-colors cursor-help">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
+                        <Icon className={`h-5 w-5 ${kpi.color}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">{kpi.label}</p>
+                        <p className="text-2xl font-bold">{kpi.value.toFixed(1)}%</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{kpi.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
 
-      {/* OEE Card with Band Color */}
-      <Card
-        className="p-6 border-2 transition-all"
-        style={{
-          borderColor: metrics.band_color,
-          backgroundColor: `${metrics.band_color}15`,
-        }}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <div
-              className="p-3 rounded-lg"
-              style={{ backgroundColor: `${metrics.band_color}20` }}
-            >
-              <Target className="h-6 w-6" style={{ color: metrics.band_color }} />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Overall Equipment Effectiveness</p>
-              <p className="text-4xl font-bold" style={{ color: metrics.band_color }}>
-                {metrics.oee.toFixed(1)}%
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 pt-4 border-t border-border">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Performance Band</span>
-            <span
-              className="text-sm font-bold uppercase tracking-wide px-3 py-1 rounded-full"
+        {/* OEE Card with Band Color */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Card
+              className="p-6 border-2 transition-all cursor-help"
               style={{
-                backgroundColor: `${metrics.band_color}30`,
-                color: metrics.band_color,
+                borderColor: metrics.band_color,
+                backgroundColor: `${metrics.band_color}15`,
               }}
             >
-              {metrics.band}
-            </span>
-          </div>
-        </div>
-      </Card>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="p-3 rounded-lg"
+                    style={{ backgroundColor: `${metrics.band_color}20` }}
+                  >
+                    <Target className="h-6 w-6" style={{ color: metrics.band_color }} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Overall Equipment Effectiveness</p>
+                    <p className="text-4xl font-bold" style={{ color: metrics.band_color }}>
+                      {metrics.oee.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">Performance Band</span>
+                  <span
+                    className="text-sm font-bold uppercase tracking-wide px-3 py-1 rounded-full"
+                    style={{
+                      backgroundColor: `${metrics.band_color}30`,
+                      color: metrics.band_color,
+                    }}
+                  >
+                    {metrics.band}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="max-w-xs">OEE = Availability × Performance × Quality</p>
+          </TooltipContent>
+        </Tooltip>
 
       {/* Band Legend */}
       <Card className="p-4 bg-sidebar/30 border-border">
@@ -137,8 +153,9 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
               <span className="text-muted-foreground font-mono">{band.range}</span>
             </div>
           ))}
-        </div>
-      </Card>
-    </div>
+          </div>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 }

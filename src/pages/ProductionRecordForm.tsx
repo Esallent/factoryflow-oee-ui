@@ -11,7 +11,8 @@ import { toast } from "@/hooks/use-toast";
 import { Save, Calculator } from "lucide-react";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { OEEKPICards } from "@/components/OEEKPICards";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ValidationBanner } from "@/components/ui/validation-banner";
+import { handleValidationError, isGreaterThan, isLessOrEqual } from "@/lib/validation";
 
 const formSchema = z.object({
   id_line: z.string().min(1, "Line is required"),
@@ -27,11 +28,11 @@ const formSchema = z.object({
   defective_units: z.number().int().min(0, "Cannot be negative"),
 }).refine((data) => {
   const totalDowntime = data.planned_downtime_min + data.unplanned_downtime_min;
-  return totalDowntime <= data.planned_time_min;
+  return isLessOrEqual(totalDowntime, data.planned_time_min);
 }, {
-  message: "Total downtime cannot exceed planned time",
+  message: "Total downtime cannot exceed planned time (±0.001 tolerance)",
   path: ["unplanned_downtime_min"],
-}).refine((data) => data.defective_units <= data.total_units, {
+}).refine((data) => isLessOrEqual(data.defective_units, data.total_units), {
   message: "Defective units cannot exceed total units",
   path: ["defective_units"],
 });
@@ -193,17 +194,15 @@ export default function ProductionRecordForm() {
       form.reset();
       setOeeMetrics(null);
     } catch (error: any) {
-      if (error.status === 400) {
-        // Highlight invalid fields
-        const errorData = await error.json();
-        if (errorData.errors) {
-          errorData.errors.forEach((err: { field: string; message: string }) => {
-            form.setError(err.field as any, { message: err.message });
-          });
-        }
-      } else if (error.status === 422) {
-        setValidationError("Incomplete or invalid data.");
-      } else {
+      // Use global validation error handler
+      const handled = await handleValidationError(error, form.setError);
+      
+      if (handled !== false && handled !== true && handled !== null && typeof handled === 'object') {
+        setValidationError((handled as any).message);
+        return;
+      }
+      
+      if (!handled) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -223,9 +222,10 @@ export default function ProductionRecordForm() {
       </div>
 
       {validationError && (
-        <Alert variant="destructive">
-          <AlertDescription>{validationError}</AlertDescription>
-        </Alert>
+        <ValidationBanner 
+          message={validationError}
+          onClose={() => setValidationError("")}
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -354,7 +354,12 @@ export default function ProductionRecordForm() {
                           min="0.1"
                           className="bg-sidebar border-border"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val >= 0.1) {
+                              field.onChange(val);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -375,7 +380,12 @@ export default function ProductionRecordForm() {
                           min="0.1"
                           className="bg-sidebar border-border"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val >= 0.1) {
+                              field.onChange(val);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -398,7 +408,12 @@ export default function ProductionRecordForm() {
                           min="0"
                           className="bg-sidebar border-border"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val >= 0) {
+                              field.onChange(val);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -419,7 +434,12 @@ export default function ProductionRecordForm() {
                           min="0"
                           className="bg-sidebar border-border"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val >= 0) {
+                              field.onChange(val);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
