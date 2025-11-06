@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { RefreshCw, TrendingUp } from "lucide-react";
 import { OeeDashboardKPIs } from "@/components/OeeDashboardKPIs";
 import { OeeTrendChart } from "@/components/OeeTrendChart";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 // Mock data
 const mockLines = [
@@ -38,6 +39,7 @@ interface Filters {
 }
 
 export default function OeeDashboard() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<Filters>({
     id_line: "all-lines",
     id_equipment: "all-equipment",
@@ -104,7 +106,7 @@ export default function OeeDashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold mb-2">OEE Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('dashboard')}</h1>
           <p className="text-muted-foreground">
             Monitor overall equipment effectiveness trends and performance metrics
           </p>
@@ -116,7 +118,7 @@ export default function OeeDashboard() {
           className="gap-2"
         >
           <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh
+          {t('filter')}
         </Button>
       </div>
 
@@ -124,12 +126,12 @@ export default function OeeDashboard() {
       <Card className="p-6 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Dashboard Filters</h2>
+          <h2 className="text-lg font-semibold">{t('filter')}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label>Production Line</Label>
+            <Label>{t('select_line')}</Label>
             <Select
               value={filters.id_line}
               onValueChange={(value) => updateFilter("id_line", value)}
@@ -148,7 +150,7 @@ export default function OeeDashboard() {
           </div>
 
           <div className="space-y-2">
-            <Label>Equipment</Label>
+            <Label>{t('select_equipment')}</Label>
             <Select
               value={filters.id_equipment}
               onValueChange={(value) => updateFilter("id_equipment", value)}
@@ -167,7 +169,7 @@ export default function OeeDashboard() {
           </div>
 
           <div className="space-y-2">
-            <Label>Date Range</Label>
+            <Label>{t('select_range')}</Label>
             <Select
               value={filters.range.toString()}
               onValueChange={(value) => updateFilter("range", parseInt(value))}
@@ -176,8 +178,8 @@ export default function OeeDashboard() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="7">Last 7 Days</SelectItem>
-                <SelectItem value="30">Last 30 Days</SelectItem>
+                <SelectItem value="7">{t('days_7')}</SelectItem>
+                <SelectItem value="30">{t('days_30')}</SelectItem>
               </SelectContent>
             </Select>
           </div>

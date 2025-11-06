@@ -1,5 +1,6 @@
 import { LayoutDashboard, ClipboardList, History, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 import {
   Sidebar,
@@ -13,15 +14,16 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Record", url: "/record", icon: ClipboardList },
-  { title: "History", url: "/history", icon: History },
-  { title: "Lines & Equipment", url: "/lines", icon: Settings },
-];
-
 export function AppSidebar() {
   const { open } = useSidebar();
+  const { t } = useTranslation();
+
+  const items = [
+    { title: t("dashboard"), url: "/dashboard", icon: LayoutDashboard },
+    { title: t("record"), url: "/record", icon: ClipboardList },
+    { title: t("history"), url: "/history", icon: History },
+    { title: t("lines"), url: "/lines", icon: Settings },
+  ];
 
   return (
     <Sidebar collapsible="icon">

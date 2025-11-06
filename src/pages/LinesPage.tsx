@@ -4,14 +4,16 @@ import { GeneralTab } from "@/components/lines/GeneralTab";
 import { EquipmentTab } from "@/components/lines/EquipmentTab";
 import { ActiveLinkTab } from "@/components/lines/ActiveLinkTab";
 import { Card } from "@/components/ui/card";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function LinesPage() {
+  const { t } = useTranslation();
   const [selectedLineId, setSelectedLineId] = useState<string>("");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Lines & Equipment Management</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('lines_equipment')}</h1>
         <p className="text-muted-foreground">
           Configure production lines, manage equipment, and set active links
         </p>
@@ -19,9 +21,9 @@ export default function LinesPage() {
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-sidebar border border-border">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="equipment">Equipment</TabsTrigger>
-          <TabsTrigger value="active-link">Active Link</TabsTrigger>
+          <TabsTrigger value="general">{t('lines')}</TabsTrigger>
+          <TabsTrigger value="equipment">{t('select_equipment')}</TabsTrigger>
+          <TabsTrigger value="active-link">{t('active')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-6">

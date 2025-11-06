@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Activity, TrendingUp, CheckCircle2, Target } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface OEEMetrics {
   availability: number;
@@ -16,12 +17,14 @@ interface OEEKPICardsProps {
 }
 
 export function OEEKPICards({ metrics }: OEEKPICardsProps) {
+  const { t } = useTranslation();
+  
   if (!metrics) {
     return (
       <div className="space-y-4">
         <Card className="p-6 bg-sidebar/50 border-border text-center">
           <p className="text-muted-foreground">
-            Enter production data to calculate OEE metrics
+            {t('calculate')}
           </p>
         </Card>
       </div>
@@ -30,7 +33,7 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
 
   const kpiData = [
     {
-      label: "Availability",
+      label: t('availability'),
       value: metrics.availability,
       icon: Activity,
       color: "text-blue-400",
@@ -38,7 +41,7 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
       tooltip: "Availability = Operating Time / Planned Production Time",
     },
     {
-      label: "Performance",
+      label: t('performance'),
       value: metrics.performance,
       icon: TrendingUp,
       color: "text-purple-400",
@@ -46,7 +49,7 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
       tooltip: "Performance = (Ideal Cycle Time × Total Count) / Operating Time",
     },
     {
-      label: "Quality",
+      label: t('quality'),
       value: metrics.quality,
       icon: CheckCircle2,
       color: "text-green-400",

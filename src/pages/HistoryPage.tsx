@@ -7,6 +7,7 @@ import { Download, Filter } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { OeeHistoryTable } from "@/components/OeeHistoryTable";
 import { DatePicker } from "@/components/DatePicker";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 // Mock data
 const mockLines = [
@@ -34,6 +35,7 @@ interface Filters {
 }
 
 export default function HistoryPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<Filters>({});
   const [isExporting, setIsExporting] = useState(false);
 
@@ -103,7 +105,7 @@ export default function HistoryPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Production History</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('production_history')}</h1>
           <p className="text-muted-foreground">
             View and export historical OEE records with advanced filtering
           </p>
@@ -114,7 +116,7 @@ export default function HistoryPage() {
           className="gap-2"
         >
           <Download className="h-4 w-4" />
-          {isExporting ? "Exporting..." : "Export CSV"}
+          {isExporting ? t('loading') : t('export')}
         </Button>
       </div>
 
@@ -122,21 +124,21 @@ export default function HistoryPage() {
       <Card className="p-6 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Filters</h2>
+          <h2 className="text-lg font-semibold">{t('filter')}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="space-y-2">
-            <Label>Production Line</Label>
+            <Label>{t('select_line')}</Label>
             <Select
               value={filters.id_line || "all-lines"}
               onValueChange={(value) => updateFilter("id_line", value === "all-lines" ? undefined : value)}
             >
               <SelectTrigger className="bg-sidebar border-border">
-                <SelectValue placeholder="All lines" />
+                <SelectValue placeholder={t('all_lines')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-lines">All lines</SelectItem>
+                <SelectItem value="all-lines">{t('all_lines')}</SelectItem>
                 {mockLines.map((line) => (
                   <SelectItem key={line.id} value={line.id}>
                     {line.name}
@@ -147,16 +149,16 @@ export default function HistoryPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Equipment</Label>
+            <Label>{t('select_equipment')}</Label>
             <Select
               value={filters.id_equipment || "all-equipment"}
               onValueChange={(value) => updateFilter("id_equipment", value === "all-equipment" ? undefined : value)}
             >
               <SelectTrigger className="bg-sidebar border-border">
-                <SelectValue placeholder="All equipment" />
+                <SelectValue placeholder={t('all_equipment')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-equipment">All equipment</SelectItem>
+                <SelectItem value="all-equipment">{t('all_equipment')}</SelectItem>
                 {mockEquipment.map((eq) => (
                   <SelectItem key={eq.id} value={eq.id}>
                     {eq.name}
@@ -167,16 +169,16 @@ export default function HistoryPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Shift</Label>
+            <Label>{t('shift')}</Label>
             <Select
               value={filters.id_shift || "all-shifts"}
               onValueChange={(value) => updateFilter("id_shift", value === "all-shifts" ? undefined : value)}
             >
               <SelectTrigger className="bg-sidebar border-border">
-                <SelectValue placeholder="All shifts" />
+                <SelectValue placeholder={t('all_shifts')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-shifts">All shifts</SelectItem>
+                <SelectItem value="all-shifts">{t('all_shifts')}</SelectItem>
                 {mockShifts.map((shift) => (
                   <SelectItem key={shift.id} value={shift.id}>
                     {shift.name}
@@ -187,7 +189,7 @@ export default function HistoryPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>From Date</Label>
+            <Label>{t('date')}</Label>
             <DatePicker
               value={filters.from_date}
               onChange={(date) => updateFilter("from_date", date)}
@@ -195,7 +197,7 @@ export default function HistoryPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>To Date</Label>
+            <Label>{t('date')}</Label>
             <DatePicker
               value={filters.to_date}
               onChange={(date) => updateFilter("to_date", date)}
@@ -205,7 +207,7 @@ export default function HistoryPage() {
 
         <div className="flex justify-end mt-4">
           <Button variant="outline" onClick={clearFilters} size="sm">
-            Clear Filters
+            {t('filter')}
           </Button>
         </div>
       </Card>

@@ -13,6 +13,7 @@ import { DateTimePicker } from "@/components/DateTimePicker";
 import { OEEKPICards } from "@/components/OEEKPICards";
 import { ValidationBanner } from "@/components/ui/validation-banner";
 import { handleValidationError, isGreaterThan, isLessOrEqual } from "@/lib/validation";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   id_line: z.string().min(1, "Line is required"),
@@ -66,6 +67,7 @@ const mockShifts = [
 ];
 
 export default function ProductionRecordForm() {
+  const { t } = useTranslation();
   const [oeeMetrics, setOeeMetrics] = useState<OEEMetrics | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [validationError, setValidationError] = useState<string>("");
@@ -186,8 +188,8 @@ export default function ProductionRecordForm() {
 
       // Simulate success
       toast({
-        title: "Success",
-        description: "Saved successfully",
+        title: t('success'),
+        description: t('success'),
       });
 
       // Reset form
@@ -215,7 +217,7 @@ export default function ProductionRecordForm() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Production Record Entry</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('production_record')}</h1>
         <p className="text-muted-foreground">
           Enter production data manually and view real-time OEE calculations
         </p>
@@ -231,7 +233,7 @@ export default function ProductionRecordForm() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column - Form Inputs */}
         <Card className="p-6 bg-card border-border">
-          <h2 className="text-xl font-semibold mb-4">Production Data</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('production_record')}</h2>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -240,11 +242,11 @@ export default function ProductionRecordForm() {
                 name="id_line"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Production Line *</FormLabel>
+                    <FormLabel>{t('line_code')} *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-sidebar border-border">
-                          <SelectValue placeholder="Select line" />
+                          <SelectValue placeholder={t('select_line')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -501,11 +503,11 @@ export default function ProductionRecordForm() {
                     setOeeMetrics(null);
                   }}
                 >
-                  Reset
+                  {t('cancel')}
                 </Button>
                 <Button type="submit" className="gap-2">
                   <Save className="h-4 w-4" />
-                  Save Record
+                  {t('save')}
                 </Button>
               </div>
             </form>
@@ -516,7 +518,7 @@ export default function ProductionRecordForm() {
         <div className="space-y-4">
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Live OEE Metrics</h2>
+              <h2 className="text-xl font-semibold">{t('oee')}</h2>
               {isCalculating && (
                 <Calculator className="h-5 w-5 text-primary animate-pulse" />
               )}
