@@ -129,14 +129,14 @@ export default function HistoryPage() {
           <div className="space-y-2">
             <Label>Production Line</Label>
             <Select
-              value={filters.id_line || ""}
-              onValueChange={(value) => updateFilter("id_line", value || undefined)}
+              value={filters.id_line || "all-lines"}
+              onValueChange={(value) => updateFilter("id_line", value === "all-lines" ? undefined : value)}
             >
               <SelectTrigger className="bg-sidebar border-border">
                 <SelectValue placeholder="All lines" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All lines</SelectItem>
+                <SelectItem value="all-lines">All lines</SelectItem>
                 {mockLines.map((line) => (
                   <SelectItem key={line.id} value={line.id}>
                     {line.name}
@@ -149,14 +149,14 @@ export default function HistoryPage() {
           <div className="space-y-2">
             <Label>Equipment</Label>
             <Select
-              value={filters.id_equipment || ""}
-              onValueChange={(value) => updateFilter("id_equipment", value || undefined)}
+              value={filters.id_equipment || "all-equipment"}
+              onValueChange={(value) => updateFilter("id_equipment", value === "all-equipment" ? undefined : value)}
             >
               <SelectTrigger className="bg-sidebar border-border">
                 <SelectValue placeholder="All equipment" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All equipment</SelectItem>
+                <SelectItem value="all-equipment">All equipment</SelectItem>
                 {mockEquipment.map((eq) => (
                   <SelectItem key={eq.id} value={eq.id}>
                     {eq.name}
@@ -169,14 +169,14 @@ export default function HistoryPage() {
           <div className="space-y-2">
             <Label>Shift</Label>
             <Select
-              value={filters.id_shift || ""}
-              onValueChange={(value) => updateFilter("id_shift", value || undefined)}
+              value={filters.id_shift || "all-shifts"}
+              onValueChange={(value) => updateFilter("id_shift", value === "all-shifts" ? undefined : value)}
             >
               <SelectTrigger className="bg-sidebar border-border">
                 <SelectValue placeholder="All shifts" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All shifts</SelectItem>
+                <SelectItem value="all-shifts">All shifts</SelectItem>
                 {mockShifts.map((shift) => (
                   <SelectItem key={shift.id} value={shift.id}>
                     {shift.name}
