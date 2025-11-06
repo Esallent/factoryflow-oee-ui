@@ -107,7 +107,7 @@ export default function HistoryPage() {
         <div>
           <h1 className="text-3xl font-bold mb-2">{t('production_history')}</h1>
           <p className="text-muted-foreground">
-            View and export historical OEE records with advanced filtering
+            {t('history_subtitle')}
           </p>
         </div>
         <Button 
@@ -134,10 +134,10 @@ export default function HistoryPage() {
               value={filters.id_line || "all-lines"}
               onValueChange={(value) => updateFilter("id_line", value === "all-lines" ? undefined : value)}
             >
-              <SelectTrigger className="bg-sidebar border-border">
+              <SelectTrigger className="bg-card border-border">
                 <SelectValue placeholder={t('all_lines')} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border z-50">
                 <SelectItem value="all-lines">{t('all_lines')}</SelectItem>
                 {mockLines.map((line) => (
                   <SelectItem key={line.id} value={line.id}>
@@ -154,10 +154,10 @@ export default function HistoryPage() {
               value={filters.id_equipment || "all-equipment"}
               onValueChange={(value) => updateFilter("id_equipment", value === "all-equipment" ? undefined : value)}
             >
-              <SelectTrigger className="bg-sidebar border-border">
+              <SelectTrigger className="bg-card border-border">
                 <SelectValue placeholder={t('all_equipment')} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border z-50">
                 <SelectItem value="all-equipment">{t('all_equipment')}</SelectItem>
                 {mockEquipment.map((eq) => (
                   <SelectItem key={eq.id} value={eq.id}>
@@ -174,10 +174,10 @@ export default function HistoryPage() {
               value={filters.id_shift || "all-shifts"}
               onValueChange={(value) => updateFilter("id_shift", value === "all-shifts" ? undefined : value)}
             >
-              <SelectTrigger className="bg-sidebar border-border">
+              <SelectTrigger className="bg-card border-border">
                 <SelectValue placeholder={t('all_shifts')} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border z-50">
                 <SelectItem value="all-shifts">{t('all_shifts')}</SelectItem>
                 {mockShifts.map((shift) => (
                   <SelectItem key={shift.id} value={shift.id}>

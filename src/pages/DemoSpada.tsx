@@ -56,14 +56,14 @@ export default function DemoSpada() {
 
   // Prepare table data
   const tableColumns = [
-    { header: "Hora", accessor: (row: any) => format(parseISO(row.ts_hour), "HH:mm") },
+    { header: t("hour"), accessor: (row: any) => format(parseISO(row.ts_hour), "HH:mm") },
     { header: t("availability") + " (%)", accessor: (row: any) => (row.availability_ratio * 100).toFixed(1) },
     { header: t("performance") + " (%)", accessor: (row: any) => (row.performance_ratio * 100).toFixed(1) },
     { header: t("quality") + " (%)", accessor: (row: any) => (row.quality_ratio * 100).toFixed(1) },
     { header: "OEE (%)", accessor: (row: any) => (row.oee_total * 100).toFixed(1) },
-    { header: "Banda", accessor: "oee_band_es" as any },
-    { header: "Unidades", accessor: "total_units" as any },
-    { header: "Defectuosas", accessor: "defective_units" as any }
+    { header: t("band"), accessor: "oee_band_es" as any },
+    { header: t("units"), accessor: "total_units" as any },
+    { header: t("defective"), accessor: "defective_units" as any }
   ];
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -72,9 +72,9 @@ export default function DemoSpada() {
         <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
           <p className="font-semibold mb-2">{payload[0].payload.hour}</p>
           <p className="text-sm" style={{ color: "#00C853" }}>OEE: {payload[0].payload.oee}%</p>
-          <p className="text-sm text-muted-foreground">Disponibilidad: {payload[0].payload.availability}%</p>
-          <p className="text-sm text-muted-foreground">Rendimiento: {payload[0].payload.performance}%</p>
-          <p className="text-sm text-muted-foreground">Calidad: {payload[0].payload.quality}%</p>
+          <p className="text-sm text-muted-foreground">{t("availability")}: {payload[0].payload.availability}%</p>
+          <p className="text-sm text-muted-foreground">{t("performance")}: {payload[0].payload.performance}%</p>
+          <p className="text-sm text-muted-foreground">{t("quality")}: {payload[0].payload.quality}%</p>
         </div>
       );
     }
@@ -90,12 +90,12 @@ export default function DemoSpada() {
           <p className="text-muted-foreground">{t("hourly_normalized_metrics")}</p>
         </div>
         <Select value="spada" onValueChange={(val) => navigate(`/demo/${val}`)}>
-          <SelectTrigger className="w-64">
+          <SelectTrigger className="w-64 bg-card border-border">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="schaeffler">🏭 Schaeffler México</SelectItem>
-            <SelectItem value="spada">⚙️ L.V. Spada</SelectItem>
+          <SelectContent className="bg-card border-border">
+            <SelectItem value="schaeffler">🏭 {t("demo_schaeffler")}</SelectItem>
+            <SelectItem value="spada">⚙️ {t("demo_spada")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -104,25 +104,25 @@ export default function DemoSpada() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-card border-border">
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Línea</p>
+            <p className="text-sm text-muted-foreground">{t("line_label")}</p>
             <p className="font-semibold">{lineData.line_name}</p>
           </CardContent>
         </Card>
         <Card className="bg-card border-border">
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Equipo</p>
+            <p className="text-sm text-muted-foreground">{t("equipment_label")}</p>
             <p className="font-semibold">{equipmentData.equipment_name}</p>
           </CardContent>
         </Card>
         <Card className="bg-card border-border">
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Tiempo de Ciclo</p>
+            <p className="text-sm text-muted-foreground">{t("cycle_time_label")}</p>
             <p className="font-semibold">{equipmentData.design_cycle_time_min} min</p>
           </CardContent>
         </Card>
         <Card className="bg-card border-border">
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Turno</p>
+            <p className="text-sm text-muted-foreground">{t("shift_label")}</p>
             <p className="font-semibold">{shiftData.shift_name}</p>
           </CardContent>
         </Card>
@@ -177,7 +177,7 @@ export default function DemoSpada() {
       {/* Chart Section */}
       <Card className="p-6 bg-card border-border">
         <CardHeader>
-          <CardTitle>Tendencia OEE por Hora</CardTitle>
+          <CardTitle>{t("hourly_trend")}</CardTitle>
           <p className="text-sm text-muted-foreground">{lineData.company_name} — {equipmentData.equipment_name}</p>
         </CardHeader>
         <CardContent>
@@ -188,10 +188,10 @@ export default function DemoSpada() {
               <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: "12px" }} domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: "14px" }} iconType="line" />
-              <ReferenceLine y={95} stroke="#00C853" strokeDasharray="3 3" label="Excelencia" />
-              <ReferenceLine y={85} stroke="#64DD17" strokeDasharray="3 3" label="Bueno" />
-              <ReferenceLine y={75} stroke="#FFD600" strokeDasharray="3 3" label="Aceptable" />
-              <ReferenceLine y={65} stroke="#FF6D00" strokeDasharray="3 3" label="Regular" />
+              <ReferenceLine y={95} stroke="#00C853" strokeDasharray="3 3" label={t("excellence")} />
+              <ReferenceLine y={85} stroke="#64DD17" strokeDasharray="3 3" label={t("good")} />
+              <ReferenceLine y={75} stroke="#FFD600" strokeDasharray="3 3" label={t("acceptable")} />
+              <ReferenceLine y={65} stroke="#FF6D00" strokeDasharray="3 3" label={t("fair")} />
               <Line type="monotone" dataKey="oee" stroke="#00C853" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
@@ -201,19 +201,19 @@ export default function DemoSpada() {
       {/* Data Table */}
       <Card className="p-6 bg-card border-border">
         <CardHeader>
-          <CardTitle>Registros Horarios</CardTitle>
+          <CardTitle>{t("hourly_records")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable 
             data={companyData} 
             columns={tableColumns} 
-            emptyMessage="No hay datos disponibles" 
+            emptyMessage={t("no_data")}
           />
         </CardContent>
       </Card>
 
       <Button variant="outline" onClick={() => navigate("/dashboard")}>
-        ← Volver al {t("dashboard")}
+        ← {t("back_to_dashboard")}
       </Button>
     </div>
   );

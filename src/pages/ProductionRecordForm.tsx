@@ -217,10 +217,12 @@ export default function ProductionRecordForm() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">{t('production_record')}</h1>
-        <p className="text-muted-foreground">
-          Enter production data manually and view real-time OEE calculations
-        </p>
+        <div>
+          <h1 className="text-3xl font-bold mb-2">{t('production_record')}</h1>
+          <p className="text-muted-foreground">
+            {t('form_subtitle')}
+          </p>
+        </div>
       </div>
 
       {validationError && (
@@ -245,11 +247,11 @@ export default function ProductionRecordForm() {
                     <FormLabel>{t('line_code')} *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-sidebar border-border">
+                        <SelectTrigger className="bg-card border-border">
                           <SelectValue placeholder={t('select_line')} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border z-50">
                         {mockLines.map((line) => (
                           <SelectItem key={line.id} value={line.id}>
                             {line.name}
@@ -267,14 +269,14 @@ export default function ProductionRecordForm() {
                 name="id_equipment"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Equipment *</FormLabel>
+                    <FormLabel>{t('equipment_code')} *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-sidebar border-border">
-                          <SelectValue placeholder="Select equipment" />
+                        <SelectTrigger className="bg-card border-border">
+                          <SelectValue placeholder={t('select_equipment')} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border z-50">
                         {mockEquipment.map((eq) => (
                           <SelectItem key={eq.id} value={eq.id}>
                             {eq.name}
@@ -292,14 +294,14 @@ export default function ProductionRecordForm() {
                 name="id_shift"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Shift *</FormLabel>
+                    <FormLabel>{t('shift')} *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-sidebar border-border">
-                          <SelectValue placeholder="Select shift" />
+                        <SelectTrigger className="bg-card border-border">
+                          <SelectValue placeholder={t('select_shift')} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-border z-50">
                         {mockShifts.map((shift) => (
                           <SelectItem key={shift.id} value={shift.id}>
                             {shift.name}
@@ -317,7 +319,7 @@ export default function ProductionRecordForm() {
                 name="shift_started_at_tz"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Shift Start Time *</FormLabel>
+                    <FormLabel>{t('shift_start')} *</FormLabel>
                     <DateTimePicker
                       value={field.value}
                       onChange={field.onChange}
@@ -332,7 +334,7 @@ export default function ProductionRecordForm() {
                 name="shift_ended_at_tz"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Shift End Time *</FormLabel>
+                    <FormLabel>{t('shift_end')} *</FormLabel>
                     <DateTimePicker
                       value={field.value}
                       onChange={field.onChange}
@@ -348,7 +350,7 @@ export default function ProductionRecordForm() {
                   name="planned_time_min"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Planned Time (min) *</FormLabel>
+                      <FormLabel>{t('planned_time')} (min) *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -374,7 +376,7 @@ export default function ProductionRecordForm() {
                   name="cycle_time_min"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cycle Time (min) *</FormLabel>
+                      <FormLabel>{t('cycle_time')} *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -402,7 +404,7 @@ export default function ProductionRecordForm() {
                   name="planned_downtime_min"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Planned Downtime (min)</FormLabel>
+                      <FormLabel>{t('planned_downtime')}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -428,7 +430,7 @@ export default function ProductionRecordForm() {
                   name="unplanned_downtime_min"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Unplanned Downtime (min)</FormLabel>
+                      <FormLabel>{t('unplanned_downtime')}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -456,7 +458,7 @@ export default function ProductionRecordForm() {
                   name="total_units"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Total Units *</FormLabel>
+                      <FormLabel>{t('total_units_label')} *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -477,7 +479,7 @@ export default function ProductionRecordForm() {
                   name="defective_units"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Defective Units</FormLabel>
+                      <FormLabel>{t('defective_units_label')}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"

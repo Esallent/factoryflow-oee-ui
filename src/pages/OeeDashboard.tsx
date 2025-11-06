@@ -110,7 +110,7 @@ export default function OeeDashboard() {
         <div>
           <h1 className="text-3xl font-bold mb-2">{t('dashboard')}</h1>
           <p className="text-muted-foreground">
-            Monitor overall equipment effectiveness trends and performance metrics
+            {t('dashboard_subtitle')}
           </p>
         </div>
         <Button 
@@ -138,10 +138,10 @@ export default function OeeDashboard() {
               value={filters.id_line}
               onValueChange={(value) => updateFilter("id_line", value)}
             >
-              <SelectTrigger className="bg-sidebar border-border">
+              <SelectTrigger className="bg-card border-border">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border z-50">
                 {mockLines.map((line) => (
                   <SelectItem key={line.id} value={line.id}>
                     {line.name}
@@ -157,10 +157,10 @@ export default function OeeDashboard() {
               value={filters.id_equipment}
               onValueChange={(value) => updateFilter("id_equipment", value)}
             >
-              <SelectTrigger className="bg-sidebar border-border">
+              <SelectTrigger className="bg-card border-border">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border z-50">
                 {mockEquipment.map((eq) => (
                   <SelectItem key={eq.id} value={eq.id}>
                     {eq.name}
@@ -176,10 +176,10 @@ export default function OeeDashboard() {
               value={filters.range.toString()}
               onValueChange={(value) => updateFilter("range", parseInt(value))}
             >
-              <SelectTrigger className="bg-sidebar border-border">
+              <SelectTrigger className="bg-card border-border">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border z-50">
                 <SelectItem value="7">{t('days_7')}</SelectItem>
                 <SelectItem value="30">{t('days_30')}</SelectItem>
               </SelectContent>
