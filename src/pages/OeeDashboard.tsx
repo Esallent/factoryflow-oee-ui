@@ -23,6 +23,13 @@ const mockEquipment = [
   { id: "eq-2", name: "CNC Machine #2" },
 ];
 
+const mockShifts = [
+  { id: "all-shifts", name: "All Shifts" },
+  { id: "shift-1", name: "Morning Shift (6:00-14:00)" },
+  { id: "shift-2", name: "Evening Shift (14:00-22:00)" },
+  { id: "shift-3", name: "Night Shift (22:00-6:00)" },
+];
+
 interface DailyOeeData {
   calendar_date: string;
   availability_avg: number;
@@ -31,12 +38,17 @@ interface DailyOeeData {
   oee_avg: number;
   total_units_sum: number;
   defective_units_sum: number;
+  expected_units?: number;
+  available_time_min?: number;
+  cycle_time_min?: number;
 }
 
 interface Filters {
   id_line: string;
   id_equipment: string;
+  id_shift: string;
   range: number;
+  compare_enabled: boolean;
 }
 
 export default function OeeDashboard() {
@@ -45,9 +57,12 @@ export default function OeeDashboard() {
   const [filters, setFilters] = useState<Filters>({
     id_line: "all-lines",
     id_equipment: "all-equipment",
+    id_shift: "all-shifts",
     range: 7,
+    compare_enabled: false,
   });
   const [dailyData, setDailyData] = useState<DailyOeeData[]>([]);
+  const [previousData, setPreviousData] = useState<DailyOeeData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const updateFilter = (key: keyof Filters, value: any) => {
@@ -62,6 +77,7 @@ export default function OeeDashboard() {
       const params = new URLSearchParams();
       if (filters.id_line !== "all-lines") params.append("id_line", filters.id_line);
       if (filters.id_equipment !== "all-equipment") params.append("id_equipment", filters.id_equipment);
+      if (filters.id_shift !== "all-shifts") params.append("id_shift", filters.id_shift);
       params.append("days", filters.range.toString());
 
       // Call GET /api/v1/reports/oee-daily.csv
@@ -74,6 +90,20 @@ export default function OeeDashboard() {
       // Mock CSV data
       const mockCsvData = generateMockDailyData(filters.range);
       setDailyData(mockCsvData);
+
+      // Fetch comparison data if enabled
+      if (filters.compare_enabled) {
+        // const compareParams = new URLSearchParams(params);
+        // compareParams.append("compare", "previous");
+        // const compareResponse = await fetch(`/api/v1/reports/oee-daily.csv?${compareParams.toString()}`);
+        // const compareText = await compareResponse.text();
+        // const parsedCompare = parseCSV(compareText);
+        
+        const mockCompareData = generateMockDailyData(filters.range, true);
+        setPreviousData(mockCompareData);
+      } else {
+        setPreviousData([]);
+      }
       
     } catch (error) {
       console.error("Failed to fetch OEE data:", error);
@@ -131,7 +161,7 @@ export default function OeeDashboard() {
           <h2 className="text-lg font-semibold">{t('filter')}</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label>{t('select_line')}</Label>
             <Select
@@ -171,6 +201,25 @@ export default function OeeDashboard() {
           </div>
 
           <div className="space-y-2">
+            <Label>{t('select_shift')}</Label>
+            <Select
+              value={filters.id_shift}
+              onValueChange={(value) => updateFilter("id_shift", value)}
+            >
+              <SelectTrigger className="bg-card border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                {mockShifts.map((shift) => (
+                  <SelectItem key={shift.id} value={shift.id}>
+                    {shift.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label>{t('select_range')}</Label>
             <Select
               value={filters.range.toString()}
@@ -186,13 +235,36 @@ export default function OeeDashboard() {
             </Select>
           </div>
         </div>
+
+        <div className="mt-4 flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="compare-toggle"
+            checked={filters.compare_enabled}
+            onChange={(e) => updateFilter("compare_enabled", e.target.checked)}
+            className="w-4 h-4 rounded border-border"
+          />
+          <Label htmlFor="compare-toggle" className="cursor-pointer">
+            {t('compare_periods')}
+          </Label>
+        </div>
       </Card>
 
       {/* KPI Cards */}
-      <OeeDashboardKPIs data={dailyData} isLoading={isLoading} />
+      <OeeDashboardKPIs 
+        data={dailyData} 
+        previousData={previousData}
+        isLoading={isLoading}
+        compareEnabled={filters.compare_enabled}
+      />
 
       {/* Trend Chart */}
-      <OeeTrendChart data={dailyData} isLoading={isLoading} />
+      <OeeTrendChart 
+        data={dailyData} 
+        previousData={previousData}
+        isLoading={isLoading}
+        compareEnabled={filters.compare_enabled}
+      />
 
       {/* Demo Pages Section */}
       <Card className="p-6 bg-card border-border">
@@ -279,18 +351,28 @@ function parseCSV(csvText: string): DailyOeeData[] {
 }
 
 // Mock data generator
-function generateMockDailyData(days: number): DailyOeeData[] {
+function generateMockDailyData(days: number, isPrevious = false): DailyOeeData[] {
   const data: DailyOeeData[] = [];
   const today = new Date();
   
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(today);
-    date.setDate(date.getDate() - i);
+    if (isPrevious) {
+      date.setDate(date.getDate() - i - days);
+    } else {
+      date.setDate(date.getDate() - i);
+    }
     
-    const availability = 0.75 + Math.random() * 0.2;
-    const performance = 0.70 + Math.random() * 0.25;
-    const quality = 0.88 + Math.random() * 0.10;
+    const baseVariation = isPrevious ? -0.05 : 0;
+    const availability = 0.75 + Math.random() * 0.2 + baseVariation;
+    const performance = 0.70 + Math.random() * 0.25 + baseVariation;
+    const quality = 0.88 + Math.random() * 0.10 + baseVariation;
     const oee = availability * performance * quality;
+    
+    const totalUnits = Math.floor(2000 + Math.random() * 1000);
+    const availableTimeMin = 480; // 8 hours
+    const cycleTimeMin = 0.25; // 15 seconds per unit
+    const expectedUnits = Math.floor(availableTimeMin / cycleTimeMin);
     
     data.push({
       calendar_date: date.toISOString().split("T")[0],
@@ -298,8 +380,11 @@ function generateMockDailyData(days: number): DailyOeeData[] {
       performance_avg: performance,
       quality_avg: quality,
       oee_avg: oee,
-      total_units_sum: Math.floor(2000 + Math.random() * 1000),
+      total_units_sum: totalUnits,
       defective_units_sum: Math.floor(20 + Math.random() * 50),
+      expected_units: expectedUnits,
+      available_time_min: availableTimeMin,
+      cycle_time_min: cycleTimeMin,
     });
   }
   

@@ -12,14 +12,17 @@ interface DailyOeeData {
   oee_avg: number;
   total_units_sum: number;
   defective_units_sum: number;
+  expected_units?: number;
 }
 
 interface OeeTrendChartProps {
   data: DailyOeeData[];
+  previousData?: DailyOeeData[];
   isLoading: boolean;
+  compareEnabled?: boolean;
 }
 
-export function OeeTrendChart({ data, isLoading }: OeeTrendChartProps) {
+export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabled = false }: OeeTrendChartProps) {
   if (isLoading) {
     return (
       <Card className="p-6 bg-card border-border">
@@ -37,14 +40,30 @@ export function OeeTrendChart({ data, isLoading }: OeeTrendChartProps) {
   }
 
   // Transform data for chart (convert to percentages)
-  const chartData = data.map((day) => ({
-    date: format(parseISO(day.calendar_date), "MMM dd"),
-    fullDate: day.calendar_date,
-    Availability: (day.availability_avg * 100).toFixed(1),
-    Performance: (day.performance_avg * 100).toFixed(1),
-    Quality: (day.quality_avg * 100).toFixed(1),
-    OEE: (day.oee_avg * 100).toFixed(1),
-  }));
+  const chartData = data.map((day, index) => {
+    const baseData = {
+      date: format(parseISO(day.calendar_date), "MMM dd"),
+      fullDate: day.calendar_date,
+      Availability: parseFloat((day.availability_avg * 100).toFixed(1)),
+      Performance: parseFloat((day.performance_avg * 100).toFixed(1)),
+      Quality: parseFloat((day.quality_avg * 100).toFixed(1)),
+      OEE: parseFloat((day.oee_avg * 100).toFixed(1)),
+    };
+
+    // Add previous period data if comparison enabled
+    if (compareEnabled && previousData[index]) {
+      const prevDay = previousData[index];
+      return {
+        ...baseData,
+        "Prev Availability": parseFloat((prevDay.availability_avg * 100).toFixed(1)),
+        "Prev Performance": parseFloat((prevDay.performance_avg * 100).toFixed(1)),
+        "Prev Quality": parseFloat((prevDay.quality_avg * 100).toFixed(1)),
+        "Prev OEE": parseFloat((prevDay.oee_avg * 100).toFixed(1)),
+      };
+    }
+
+    return baseData;
+  });
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -125,6 +144,45 @@ export function OeeTrendChart({ data, isLoading }: OeeTrendChartProps) {
             dot={{ r: 3 }}
             strokeDasharray="5 5"
           />
+          {compareEnabled && (
+            <>
+              <Line
+                type="monotone"
+                dataKey="Prev OEE"
+                stroke="#27ae60"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                opacity={0.5}
+              />
+              <Line
+                type="monotone"
+                dataKey="Prev Availability"
+                stroke="#3498db"
+                strokeWidth={1}
+                dot={{ r: 2 }}
+                strokeDasharray="3 3"
+                opacity={0.5}
+              />
+              <Line
+                type="monotone"
+                dataKey="Prev Performance"
+                stroke="#9b59b6"
+                strokeWidth={1}
+                dot={{ r: 2 }}
+                strokeDasharray="3 3"
+                opacity={0.5}
+              />
+              <Line
+                type="monotone"
+                dataKey="Prev Quality"
+                stroke="#2ecc71"
+                strokeWidth={1}
+                dot={{ r: 2 }}
+                strokeDasharray="3 3"
+                opacity={0.5}
+              />
+            </>
+          )}
         </LineChart>
       </ResponsiveContainer>
 

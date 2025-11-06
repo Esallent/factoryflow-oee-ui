@@ -11,11 +11,16 @@ interface DailyOeeData {
   oee_avg: number;
   total_units_sum: number;
   defective_units_sum: number;
+  expected_units?: number;
+  available_time_min?: number;
+  cycle_time_min?: number;
 }
 
 interface OeeDashboardKPIsProps {
   data: DailyOeeData[];
+  previousData?: DailyOeeData[];
   isLoading: boolean;
+  compareEnabled?: boolean;
 }
 
 const getOeeBandColor = (oee: number): string => {
@@ -34,7 +39,7 @@ const getOeeBandText = (oee: number): string => {
   return "Unacceptable";
 };
 
-export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
+export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEnabled = false }: OeeDashboardKPIsProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -64,8 +69,9 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
       oee: acc.oee + day.oee_avg,
       units: acc.units + day.total_units_sum,
       defective: acc.defective + day.defective_units_sum,
+      expected: acc.expected + (day.expected_units || 0),
     }),
-    { availability: 0, performance: 0, quality: 0, oee: 0, units: 0, defective: 0 }
+    { availability: 0, performance: 0, quality: 0, oee: 0, units: 0, defective: 0, expected: 0 }
   );
 
   const count = data.length;
@@ -75,6 +81,41 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
   const avgOee = (totals.oee / count) * 100;
   const totalUnits = totals.units;
   const totalDefective = totals.defective;
+  const totalExpected = totals.expected;
+
+  // Calculate previous period metrics if comparison enabled
+  let prevTotals = { availability: 0, performance: 0, quality: 0, oee: 0, units: 0, defective: 0, expected: 0 };
+  let prevAvgAvailability = 0, prevAvgPerformance = 0, prevAvgQuality = 0, prevAvgOee = 0;
+  let prevTotalUnits = 0, prevTotalDefective = 0, prevTotalExpected = 0;
+
+  if (compareEnabled && previousData.length > 0) {
+    prevTotals = previousData.reduce(
+      (acc, day) => ({
+        availability: acc.availability + day.availability_avg,
+        performance: acc.performance + day.performance_avg,
+        quality: acc.quality + day.quality_avg,
+        oee: acc.oee + day.oee_avg,
+        units: acc.units + day.total_units_sum,
+        defective: acc.defective + day.defective_units_sum,
+        expected: acc.expected + (day.expected_units || 0),
+      }),
+      { availability: 0, performance: 0, quality: 0, oee: 0, units: 0, defective: 0, expected: 0 }
+    );
+
+    const prevCount = previousData.length;
+    prevAvgAvailability = (prevTotals.availability / prevCount) * 100;
+    prevAvgPerformance = (prevTotals.performance / prevCount) * 100;
+    prevAvgQuality = (prevTotals.quality / prevCount) * 100;
+    prevAvgOee = (prevTotals.oee / prevCount) * 100;
+    prevTotalUnits = prevTotals.units;
+    prevTotalDefective = prevTotals.defective;
+    prevTotalExpected = prevTotals.expected;
+  }
+
+  const calculateDelta = (current: number, previous: number) => {
+    if (previous === 0) return 0;
+    return ((current - previous) / previous) * 100;
+  };
 
   const oeeBandColor = getOeeBandColor(avgOee / 100);
   const oeeBandText = getOeeBandText(avgOee / 100);
@@ -83,6 +124,8 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
     {
       label: "Availability",
       value: avgAvailability.toFixed(1) + "%",
+      prevValue: compareEnabled ? prevAvgAvailability.toFixed(1) + "%" : null,
+      delta: compareEnabled ? calculateDelta(avgAvailability, prevAvgAvailability) : null,
       icon: Activity,
       color: "text-blue-400",
       bgColor: "bg-blue-500/10",
@@ -91,6 +134,8 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
     {
       label: "Performance",
       value: avgPerformance.toFixed(1) + "%",
+      prevValue: compareEnabled ? prevAvgPerformance.toFixed(1) + "%" : null,
+      delta: compareEnabled ? calculateDelta(avgPerformance, prevAvgPerformance) : null,
       icon: TrendingUp,
       color: "text-purple-400",
       bgColor: "bg-purple-500/10",
@@ -99,6 +144,8 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
     {
       label: "Quality",
       value: avgQuality.toFixed(1) + "%",
+      prevValue: compareEnabled ? prevAvgQuality.toFixed(1) + "%" : null,
+      delta: compareEnabled ? calculateDelta(avgQuality, prevAvgQuality) : null,
       icon: CheckCircle2,
       color: "text-green-400",
       bgColor: "bg-green-500/10",
@@ -107,6 +154,8 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
     {
       label: "Overall OEE",
       value: avgOee.toFixed(1) + "%",
+      prevValue: compareEnabled ? prevAvgOee.toFixed(1) + "%" : null,
+      delta: compareEnabled ? calculateDelta(avgOee, prevAvgOee) : null,
       subtitle: oeeBandText,
       icon: Target,
       color: oeeBandColor,
@@ -132,12 +181,24 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground mb-1">{kpi.label}</p>
-                  <p
-                    className="text-3xl font-bold"
-                    style={kpi.highlight ? { color: kpi.color } : {}}
-                  >
-                    {kpi.value}
-                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <p
+                      className="text-3xl font-bold"
+                      style={kpi.highlight ? { color: kpi.color } : {}}
+                    >
+                      {kpi.value}
+                    </p>
+                    {kpi.prevValue && (
+                      <p className="text-sm text-muted-foreground">
+                        / {kpi.prevValue}
+                      </p>
+                    )}
+                  </div>
+                  {kpi.delta !== null && (
+                    <p className={`text-xs font-medium mt-1 ${kpi.delta >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {kpi.delta >= 0 ? '▲' : '▼'} {Math.abs(kpi.delta).toFixed(1)}%
+                    </p>
+                  )}
                   {kpi.subtitle && (
                     <p
                       className="text-xs font-semibold uppercase tracking-wide mt-2 px-2 py-1 rounded-full inline-block"
@@ -160,15 +221,47 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
       </div>
 
       {/* Additional Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4 bg-card border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-500/10">
               <Package className="h-5 w-5 text-blue-400" />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-sm text-muted-foreground">Total Units Produced</p>
-              <p className="text-2xl font-bold">{totalUnits.toLocaleString()}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold">{totalUnits.toLocaleString()}</p>
+                {compareEnabled && prevTotalUnits > 0 && (
+                  <p className="text-sm text-muted-foreground">/ {prevTotalUnits.toLocaleString()}</p>
+                )}
+              </div>
+              {compareEnabled && prevTotalUnits > 0 && (
+                <p className={`text-xs font-medium ${calculateDelta(totalUnits, prevTotalUnits) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {calculateDelta(totalUnits, prevTotalUnits) >= 0 ? '▲' : '▼'} {Math.abs(calculateDelta(totalUnits, prevTotalUnits)).toFixed(1)}%
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 bg-card border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gray-500/10">
+              <Target className="h-5 w-5 text-gray-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground">Expected Units</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold">{totalExpected.toLocaleString()}</p>
+                {compareEnabled && prevTotalExpected > 0 && (
+                  <p className="text-sm text-muted-foreground">/ {prevTotalExpected.toLocaleString()}</p>
+                )}
+              </div>
+              {totalExpected > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {((totalUnits / totalExpected) * 100).toFixed(1)}% completion
+                </p>
+              )}
             </div>
           </div>
         </Card>
@@ -178,9 +271,14 @@ export function OeeDashboardKPIs({ data, isLoading }: OeeDashboardKPIsProps) {
             <div className="p-2 rounded-lg bg-red-500/10">
               <AlertTriangle className="h-5 w-5 text-red-400" />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-sm text-muted-foreground">Total Defective Units</p>
-              <p className="text-2xl font-bold">{totalDefective.toLocaleString()}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold">{totalDefective.toLocaleString()}</p>
+                {compareEnabled && prevTotalDefective > 0 && (
+                  <p className="text-sm text-muted-foreground">/ {prevTotalDefective.toLocaleString()}</p>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {((totalDefective / totalUnits) * 100).toFixed(2)}% defect rate
               </p>
