@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { RefreshCw, TrendingUp } from "lucide-react";
+import { RefreshCw, TrendingUp, Factory } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { OeeDashboardKPIs } from "@/components/OeeDashboardKPIs";
 import { OeeTrendChart } from "@/components/OeeTrendChart";
 import { useTranslation } from "@/contexts/LanguageContext";
@@ -40,6 +41,7 @@ interface Filters {
 
 export default function OeeDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<Filters>({
     id_line: "all-lines",
     id_equipment: "all-equipment",
@@ -191,6 +193,45 @@ export default function OeeDashboard() {
 
       {/* Trend Chart */}
       <OeeTrendChart data={dailyData} isLoading={isLoading} />
+
+      {/* Demo Pages Section */}
+      <Card className="p-6 bg-card border-border">
+        <div className="flex items-center gap-2 mb-4">
+          <Factory className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">Demo Pages — Hourly Analysis</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Explore detailed hourly OEE analysis for demo companies with normalized datasets
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button
+            onClick={() => navigate("/demo/schaeffler")}
+            variant="outline"
+            className="h-auto py-4 px-6 flex flex-col items-start gap-2"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🏭</span>
+              <span className="font-semibold">Schaeffler México</span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              View hourly OEE metrics and performance bands
+            </span>
+          </Button>
+          <Button
+            onClick={() => navigate("/demo/spada")}
+            variant="outline"
+            className="h-auto py-4 px-6 flex flex-col items-start gap-2"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⚙️</span>
+              <span className="font-semibold">L.V. Spada</span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              View hourly OEE metrics and performance bands
+            </span>
+          </Button>
+        </div>
+      </Card>
 
       {/* Hidden placeholders for future features */}
       {/* 
