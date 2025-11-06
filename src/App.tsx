@@ -7,7 +7,7 @@ import { Layout } from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Record from "./pages/Record";
 import History from "./pages/History";
-import Lines from "./pages/Lines";
+import LinesPage from "./pages/LinesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,7 +23,7 @@ const App = () => (
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/record" element={<Layout><Record /></Layout>} />
           <Route path="/history" element={<Layout><History /></Layout>} />
-          <Route path="/lines" element={<Layout><Lines /></Layout>} />
+          <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
