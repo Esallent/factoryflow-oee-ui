@@ -15,7 +15,7 @@ export default function LinesPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">{t('lines_equipment')}</h1>
         <p className="text-muted-foreground">
-          Configure production lines, manage equipment, and set active links
+          {t('lines_subtitle')}
         </p>
       </div>
 

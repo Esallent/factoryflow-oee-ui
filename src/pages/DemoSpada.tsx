@@ -13,7 +13,7 @@ import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function DemoSpada() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const companyKey = "company_2";
   const companyData = demoDataset.fact_oee_hourly[companyKey];
   const lineData = demoDataset.dim_line[companyKey];
@@ -27,12 +27,12 @@ export default function DemoSpada() {
   const avgOee = avgAvailability * avgPerformance * avgQuality;
 
   // Determine OEE band
-  const getOeeBand = (oee: number) => {
-    if (oee >= 0.95) return "Excelencia";
-    if (oee >= 0.85) return "Bueno";
-    if (oee >= 0.75) return "Aceptable";
-    if (oee >= 0.65) return "Regular";
-    return "Inaceptable";
+  const getOeeBand = (oee: number, language: string) => {
+    if (oee >= 0.95) return language === "en" ? "Excellence" : "Excelencia";
+    if (oee >= 0.85) return language === "en" ? "Good" : "Bueno";
+    if (oee >= 0.75) return language === "en" ? "Acceptable" : "Aceptable";
+    if (oee >= 0.65) return language === "en" ? "Fair" : "Regular";
+    return language === "en" ? "Unacceptable" : "Inaceptable";
   };
 
   const getOeeBandColor = (oee: number) => {
@@ -86,8 +86,8 @@ export default function DemoSpada() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{lineData.company_name} — Análisis OEE Horario</h1>
-          <p className="text-muted-foreground">Métricas normalizadas de rendimiento OEE por hora</p>
+          <h1 className="text-3xl font-bold">{lineData.company_name} — {t("hourly_oee_analysis")}</h1>
+          <p className="text-muted-foreground">{t("hourly_normalized_metrics")}</p>
         </div>
         <Select value="spada" onValueChange={(val) => navigate(`/demo/${val}`)}>
           <SelectTrigger className="w-64">
@@ -167,7 +167,7 @@ export default function DemoSpada() {
                 <span className="text-sm text-muted-foreground">%</span>
               </div>
               <p className="text-xs font-medium" style={{ color: getOeeBandColor(avgOee) }}>
-                {getOeeBand(avgOee)}
+                {getOeeBand(avgOee, language)}
               </p>
             </div>
           </CardContent>
