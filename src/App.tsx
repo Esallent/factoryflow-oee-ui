@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Record from "./pages/Record";
 import History from "./pages/History";
 import LinesPage from "./pages/LinesPage";
+import ProductionRecordForm from "./pages/ProductionRecordForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +23,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/record" element={<Layout><Record /></Layout>} />
+          <Route path="/record" element={<Layout><ProductionRecordForm /></Layout>} />
           <Route path="/history" element={<Layout><History /></Layout>} />
           <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
           <Route path="*" element={<NotFound />} />
