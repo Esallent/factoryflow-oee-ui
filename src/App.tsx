@@ -20,8 +20,8 @@ const App = () => (
       <Route path="/record" element={<Layout><ProductionRecordForm /></Layout>} />
       <Route path="/history" element={<Layout><HistoryPage /></Layout>} />
       <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
-      <Route path="/demo/schaeffler" element={<DemoSchaeffler />} />
-      <Route path="/demo/spada" element={<DemoSpada />} />
+      <Route path="/demo/schaeffler" element={<Layout><DemoSchaeffler /></Layout>} />
+      <Route path="/demo/spada" element={<Layout><DemoSpada /></Layout>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </TooltipProvider>
