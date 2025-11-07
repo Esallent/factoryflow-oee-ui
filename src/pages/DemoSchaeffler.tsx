@@ -28,7 +28,7 @@ export default function DemoSchaeffler() {
 
   // Determine OEE band
   const getOeeBand = (oee: number, language: string) => {
-    if (oee >= 0.95) return language === "en" ? "Excellence" : "Excelencia";
+    if (oee >= 0.95) return language === "en" ? "Excellent" : "Excelente";
     if (oee >= 0.85) return language === "en" ? "Good" : "Bueno";
     if (oee >= 0.75) return language === "en" ? "Acceptable" : "Aceptable";
     if (oee >= 0.65) return language === "en" ? "Fair" : "Regular";

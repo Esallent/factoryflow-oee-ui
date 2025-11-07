@@ -140,9 +140,10 @@ export function UnplannedDowntimesSection({
           <div className="space-y-4">
             {downtimes.map((downtime, index) => (
               <Card key={downtime.id} className="p-4 bg-sidebar border-border">
-                <div className="flex flex-col gap-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
+                <div className="space-y-4">
+                  {/* Row 1: Category and Duration */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="sm:col-span-1 lg:col-span-2">
                       <label className="text-sm font-medium mb-2 block">
                         {t("downtime_category")} *
                       </label>
@@ -169,6 +170,7 @@ export function UnplannedDowntimesSection({
                           variant="outline"
                           size="icon"
                           onClick={() => setNewCategoryDialogOpen(true)}
+                          className="flex-shrink-0"
                         >
                           <PlusCircle className="h-4 w-4" />
                         </Button>
@@ -179,35 +181,35 @@ export function UnplannedDowntimesSection({
                       <label className="text-sm font-medium mb-2 block">
                         {t("duration_minutes")} *
                       </label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        placeholder="0.0"
-                        value={downtime.duration_min || ""}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          if (!isNaN(val) && val >= 0) {
-                            updateDowntime(downtime.id, "duration_min", val);
-                          }
-                        }}
-                        className="bg-card border-border"
-                      />
-                    </div>
-
-                    <div className="flex items-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeDowntime(downtime.id)}
-                        className="hover:bg-destructive/10 hover:text-destructive w-full md:w-auto"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          placeholder="0.0"
+                          value={downtime.duration_min || ""}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val >= 0) {
+                              updateDowntime(downtime.id, "duration_min", val);
+                            }
+                          }}
+                          className="bg-card border-border flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeDowntime(downtime.id)}
+                          className="hover:bg-destructive/10 hover:text-destructive flex-shrink-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
+                  {/* Row 2: Cause Detail */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">
                       {t("cause_detail")}

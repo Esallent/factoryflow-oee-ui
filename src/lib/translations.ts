@@ -172,7 +172,7 @@ export const translations = {
     
     // OEE Bands
     oee_bands: "OEE Performance Bands",
-    excellence: "Excellence",
+    excellence: "Excellent",
     good: "Good",
     acceptable: "Acceptable",
     fair: "Fair",

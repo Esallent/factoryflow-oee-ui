@@ -194,11 +194,11 @@ export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabl
         <p className="text-xs font-semibold text-muted-foreground mb-2">{t("oee_bands")}</p>
         <div className="flex flex-wrap gap-4">
           {[
-            { labelKey: "excellence" as const, color: "#27ae60", range: "≥85%" },
-            { labelKey: "good" as const, color: "#2ecc71", range: "75-84%" },
-            { labelKey: "acceptable" as const, color: "#f1c40f", range: "60-74%" },
-            { labelKey: "fair" as const, color: "#f39c12", range: "40-59%" },
-            { labelKey: "unacceptable" as const, color: "#e74c3c", range: "<40%" },
+            { labelKey: "excellence" as const, color: "#27ae60", range: "≥95%" },
+            { labelKey: "good" as const, color: "#2ecc71", range: "≥85% <95%" },
+            { labelKey: "acceptable" as const, color: "#3498db", range: "≥75% <85%" },
+            { labelKey: "fair" as const, color: "#f39c12", range: "≥65% <75%" },
+            { labelKey: "unacceptable" as const, color: "#e74c3c", range: "<65%" },
           ].map((band) => (
             <div key={band.labelKey} className="flex items-center gap-2">
               <div

@@ -25,18 +25,18 @@ interface OeeDashboardKPIsProps {
 }
 
 const getOeeBandColor = (oee: number): string => {
-  if (oee >= 0.85) return "#27ae60"; // Excellence
-  if (oee >= 0.75) return "#2ecc71"; // Good
-  if (oee >= 0.60) return "#f1c40f"; // Acceptable
-  if (oee >= 0.40) return "#f39c12"; // Fair
-  return "#e74c3c"; // Unacceptable
+  if (oee >= 0.95) return "#27ae60"; // Excelente
+  if (oee >= 0.85) return "#2ecc71"; // Bueno
+  if (oee >= 0.75) return "#3498db"; // Aceptable
+  if (oee >= 0.65) return "#f39c12"; // Regular
+  return "#e74c3c"; // Inaceptable
 };
 
 const getOeeBandText = (oee: number, t: (key: string) => string): string => {
-  if (oee >= 0.85) return t("excellence");
-  if (oee >= 0.75) return t("good");
-  if (oee >= 0.60) return t("acceptable");
-  if (oee >= 0.40) return t("fair");
+  if (oee >= 0.95) return t("excellence");
+  if (oee >= 0.85) return t("good");
+  if (oee >= 0.75) return t("acceptable");
+  if (oee >= 0.65) return t("fair");
   return t("unacceptable");
 };
 
