@@ -121,6 +121,13 @@ export const translations = {
   total_downtime_exceeds: "Total downtime exceeds shift duration",
   select_equipment_to_manage_templates: "Select an equipment from the Equipment tab to manage its planned downtime templates.",
   
+  // Equipment association
+  associated_equipment: "Associated Equipment",
+  equipment_singular: "equipment",
+  equipment_plural: "equipment",
+  no_equipment_available: "No equipment available",
+  equipment_selected: "equipment selected",
+  
     all_lines: "All Lines",
     all_equipment: "All Equipment",
     days_7: "Last 7 Days",
@@ -324,6 +331,13 @@ export const translations = {
   cause_detail_required: "Indique la causa específica",
   total_downtime_exceeds: "El total de paradas excede el tiempo del turno",
   select_equipment_to_manage_templates: "Seleccione un equipo de la pestaña Equipos para gestionar sus plantillas de paradas planificadas.",
+  
+  // Equipment association
+  associated_equipment: "Equipos asociados",
+  equipment_singular: "equipo",
+  equipment_plural: "equipos",
+  no_equipment_available: "No hay equipos disponibles",
+  equipment_selected: "equipos seleccionados",
   
     all_lines: "Todas las líneas",
     all_equipment: "Todos los equipos",

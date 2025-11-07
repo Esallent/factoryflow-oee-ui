@@ -14,16 +14,16 @@ export interface DowntimeTemplate {
   duration_min: number;
   unit_type: "ABSOLUTE" | "UNIT_PER_CYCLE";
   remarks?: string;
-  equipment_id?: string;
-  line_id?: string;
+  associated_equipment_ids?: string[]; // Many-to-many relationship
 }
 
 interface DowntimeTemplatesTabProps {
   selectedEquipmentId?: string;
   selectedLineId?: string;
+  availableEquipment?: Array<{ id: string; name: string }>;
 }
 
-// Mock data - replace with API call to /equipment/{id}/downtime-templates
+// Mock data - replace with API call to /downtime-templates
 const mockTemplates: DowntimeTemplate[] = [
   {
     id: "dt-1",
@@ -31,6 +31,7 @@ const mockTemplates: DowntimeTemplate[] = [
     duration_min: 30,
     unit_type: "ABSOLUTE",
     remarks: "Daily lunch break for operators",
+    associated_equipment_ids: ["eq-1", "eq-2"],
   },
   {
     id: "dt-2",
@@ -38,10 +39,15 @@ const mockTemplates: DowntimeTemplate[] = [
     duration_min: 5,
     unit_type: "UNIT_PER_CYCLE",
     remarks: "Tool change every cycle",
+    associated_equipment_ids: ["eq-1"],
   },
 ];
 
-export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: DowntimeTemplatesTabProps) {
+export function DowntimeTemplatesTab({ 
+  selectedEquipmentId, 
+  selectedLineId,
+  availableEquipment = []
+}: DowntimeTemplatesTabProps) {
   const { t } = useTranslation();
   const [templates, setTemplates] = useState<DowntimeTemplate[]>(mockTemplates);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -67,6 +73,17 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
           {template.unit_type === "ABSOLUTE" ? t("unit_type_absolute") : t("unit_type_per_cycle")}
         </span>
       ),
+    },
+    {
+      header: t("associated_equipment"),
+      accessor: (template: DowntimeTemplate) => {
+        const count = template.associated_equipment_ids?.length || 0;
+        return (
+          <span className="text-sm text-muted-foreground">
+            {count} {count === 1 ? t("equipment_singular") : t("equipment_plural")}
+          </span>
+        );
+      },
     },
     {
       header: t("remarks"),
@@ -106,8 +123,8 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
 
   const handleDelete = async (id: string) => {
     try {
-      // DELETE /equipment/{equipmentId}/downtime-templates/{id}
-      // await fetch(`/api/v1/equipment/${selectedEquipmentId}/downtime-templates/${id}`, {
+      // DELETE /downtime-templates/{id}
+      // await fetch(`/api/v1/downtime-templates/${id}`, {
       //   method: 'DELETE',
       // });
 
@@ -129,8 +146,8 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
   const handleSave = async (data: Omit<DowntimeTemplate, "id">) => {
     try {
       if (editingTemplate) {
-        // PUT /equipment/{equipmentId}/downtime-templates/{id}
-        // await fetch(`/api/v1/equipment/${selectedEquipmentId}/downtime-templates/${editingTemplate.id}`, {
+        // PUT /downtime-templates/{id}
+        // await fetch(`/api/v1/downtime-templates/${editingTemplate.id}`, {
         //   method: 'PUT',
         //   headers: { 'Content-Type': 'application/json' },
         //   body: JSON.stringify(data),
@@ -142,22 +159,16 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
           )
         );
       } else {
-        // POST /equipment/{equipmentId}/downtime-templates
-        // await fetch(`/api/v1/equipment/${selectedEquipmentId}/downtime-templates`, {
+        // POST /downtime-templates
+        // await fetch(`/api/v1/downtime-templates`, {
         //   method: 'POST',
         //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     ...data,
-        //     equipment_id: selectedEquipmentId,
-        //     line_id: selectedLineId,
-        //   }),
+        //   body: JSON.stringify(data),
         // });
 
         const newTemplate = {
           ...data,
           id: `dt-${Date.now()}`,
-          equipment_id: selectedEquipmentId,
-          line_id: selectedLineId,
         };
 
         setTemplates([...templates, newTemplate]);
@@ -188,45 +199,33 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
         </AlertDescription>
       </Alert>
 
-      {!selectedEquipmentId && (
-        <Alert className="bg-yellow-500/10 border-yellow-500/30">
-          <Info className="h-4 w-4 text-yellow-400" />
-          <AlertDescription className="text-sm">
-            {t("select_equipment_to_manage_templates")}
-          </AlertDescription>
-        </Alert>
-      )}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">{t("downtime_templates")}</h2>
+        <Button
+          onClick={() => {
+            setEditingTemplate(null);
+            setDialogOpen(true);
+          }}
+          className="gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          {t("add_template")}
+        </Button>
+      </div>
 
-      {selectedEquipmentId && (
-        <>
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">{t("downtime_templates")}</h2>
-            <Button
-              onClick={() => {
-                setEditingTemplate(null);
-                setDialogOpen(true);
-              }}
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              {t("add_template")}
-            </Button>
-          </div>
+      <DataTable
+        data={templates}
+        columns={columns}
+        emptyMessage={t("no_templates")}
+      />
 
-          <DataTable
-            data={templates}
-            columns={columns}
-            emptyMessage={t("no_templates")}
-          />
-
-          <DowntimeTemplateDialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            template={editingTemplate}
-            onSave={handleSave}
-          />
-        </>
-      )}
+      <DowntimeTemplateDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        template={editingTemplate}
+        onSave={handleSave}
+        availableEquipment={availableEquipment}
+      />
     </div>
   );
 }

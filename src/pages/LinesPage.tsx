@@ -12,6 +12,13 @@ export default function LinesPage() {
   const [selectedLineId, setSelectedLineId] = useState<string>("");
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
 
+  // Mock equipment data - in production, fetch from API
+  const availableEquipment = [
+    { id: "eq-1", name: "CNC Machine #1" },
+    { id: "eq-2", name: "CNC Machine #2" },
+    { id: "eq-3", name: "Robotic Arm #1" },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -44,16 +51,11 @@ export default function LinesPage() {
 
         <TabsContent value="downtime-templates" className="mt-6">
           <Card className="p-6 bg-card border-border">
-            {selectedEquipmentId ? (
-              <DowntimeTemplatesTab 
-                selectedEquipmentId={selectedEquipmentId}
-                selectedLineId={selectedLineId}
-              />
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">{t('select_equipment_optional')}</p>
-              </div>
-            )}
+            <DowntimeTemplatesTab 
+              selectedEquipmentId={selectedEquipmentId}
+              selectedLineId={selectedLineId}
+              availableEquipment={availableEquipment}
+            />
           </Card>
         </TabsContent>
 
