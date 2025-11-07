@@ -9,6 +9,9 @@ import HistoryPage from "./pages/HistoryPage";
 import LinesPage from "./pages/LinesPage";
 import ProductionRecordForm from "./pages/ProductionRecordForm";
 import ProductionRecordFormV2 from "./pages/ProductionRecordFormV2";
+import OeeDashboardV2 from "./pages/OeeDashboardV2";
+import HistoryPageV2 from "./pages/HistoryPageV2";
+import IntegrationsPanel from "./pages/IntegrationsPanel";
 import DemoSchaeffler from "./pages/DemoSchaeffler";
 import DemoSpada from "./pages/DemoSpada";
 import NotFound from "./pages/NotFound";
@@ -22,9 +25,12 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Layout><OeeDashboard /></Layout>} />
+          <Route path="/dashboard-v2" element={<Layout><OeeDashboardV2 /></Layout>} />
           <Route path="/record" element={<Layout><ProductionRecordForm /></Layout>} />
           <Route path="/record-v2" element={<Layout><ProductionRecordFormV2 /></Layout>} />
           <Route path="/history" element={<Layout><HistoryPage /></Layout>} />
+          <Route path="/history-v2" element={<Layout><HistoryPageV2 /></Layout>} />
+          <Route path="/integrations" element={<Layout><IntegrationsPanel /></Layout>} />
           <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
           <Route path="/demo/schaeffler" element={<Layout><DemoSchaeffler /></Layout>} />
           <Route path="/demo/spada" element={<Layout><DemoSpada /></Layout>} />
