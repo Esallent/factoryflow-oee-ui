@@ -140,23 +140,23 @@ export default function ProductionRecordForm() {
         
         const oee = availability * performance * quality;
         
-        let band = "unacceptable";
+        let band = "inaceptable";
         let band_color = "#e74c3c";
         
         if (oee >= 0.95) {
-          band = "world_class";
+          band = "excelente";
           band_color = "#27ae60";
         } else if (oee >= 0.85) {
-          band = "excellent";
+          band = "bueno";
           band_color = "#2ecc71";
         } else if (oee >= 0.75) {
-          band = "good";
+          band = "aceptable";
           band_color = "#3498db";
         } else if (oee >= 0.65) {
-          band = "acceptable";
+          band = "regular";
           band_color = "#f39c12";
         } else {
-          band = "unacceptable";
+          band = "inaceptable";
           band_color = "#e74c3c";
         }
 

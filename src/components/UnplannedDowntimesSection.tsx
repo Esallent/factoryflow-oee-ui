@@ -140,62 +140,75 @@ export function UnplannedDowntimesSection({
           <div className="space-y-4">
             {downtimes.map((downtime, index) => (
               <Card key={downtime.id} className="p-4 bg-sidebar border-border">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                  <div className="md:col-span-4">
-                    <label className="text-sm font-medium mb-2 block">
-                      {t("downtime_category")} *
-                    </label>
-                    <div className="flex gap-2">
-                      <Select
-                        value={downtime.category_code}
-                        onValueChange={(value) =>
-                          updateDowntime(downtime.id, "category_code", value)
-                        }
-                      >
-                        <SelectTrigger className="bg-card border-border flex-1">
-                          <SelectValue placeholder={t("select_or_create")} />
-                        </SelectTrigger>
-                        <SelectContent className="bg-card border-border z-50">
-                          {categories.map((cat) => (
-                            <SelectItem key={cat.code} value={cat.code}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        {t("downtime_category")} *
+                      </label>
+                      <div className="flex gap-2">
+                        <Select
+                          value={downtime.category_code}
+                          onValueChange={(value) =>
+                            updateDowntime(downtime.id, "category_code", value)
+                          }
+                        >
+                          <SelectTrigger className="bg-card border-border flex-1">
+                            <SelectValue placeholder={t("select_or_create")} />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover border-border z-[100]">
+                            {categories.map((cat) => (
+                              <SelectItem key={cat.code} value={cat.code}>
+                                {cat.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setNewCategoryDialogOpen(true)}
+                        >
+                          <PlusCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        {t("duration_minutes")} *
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        placeholder="0.0"
+                        value={downtime.duration_min || ""}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val) && val >= 0) {
+                            updateDowntime(downtime.id, "duration_min", val);
+                          }
+                        }}
+                        className="bg-card border-border"
+                      />
+                    </div>
+
+                    <div className="flex items-end">
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setNewCategoryDialogOpen(true)}
-                        className="gap-1"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeDowntime(downtime.id)}
+                        className="hover:bg-destructive/10 hover:text-destructive w-full md:w-auto"
                       >
-                        <PlusCircle className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="text-sm font-medium mb-2 block">
-                      {t("duration_minutes")} *
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      placeholder="0.0"
-                      value={downtime.duration_min || ""}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        if (!isNaN(val) && val >= 0) {
-                          updateDowntime(downtime.id, "duration_min", val);
-                        }
-                      }}
-                      className="bg-card border-border"
-                    />
-                  </div>
-
-                  <div className="md:col-span-5">
+                  <div>
                     <label className="text-sm font-medium mb-2 block">
                       {t("cause_detail")}
                     </label>
@@ -205,21 +218,9 @@ export function UnplannedDowntimesSection({
                         updateDowntime(downtime.id, "cause_detail", e.target.value)
                       }
                       className="bg-card border-border resize-none"
-                      rows={1}
+                      rows={2}
                       placeholder={t("optional_details")}
                     />
-                  </div>
-
-                  <div className="md:col-span-1 flex items-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeDowntime(downtime.id)}
-                      className="hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               </Card>
