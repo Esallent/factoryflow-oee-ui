@@ -8,6 +8,7 @@ import OeeDashboard from "./pages/OeeDashboard";
 import HistoryPage from "./pages/HistoryPage";
 import LinesPage from "./pages/LinesPage";
 import ProductionRecordForm from "./pages/ProductionRecordForm";
+import ProductionRecordFormV2 from "./pages/ProductionRecordFormV2";
 import DemoSchaeffler from "./pages/DemoSchaeffler";
 import DemoSpada from "./pages/DemoSpada";
 import NotFound from "./pages/NotFound";
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Layout><OeeDashboard /></Layout>} />
           <Route path="/record" element={<Layout><ProductionRecordForm /></Layout>} />
+          <Route path="/record-v2" element={<Layout><ProductionRecordFormV2 /></Layout>} />
           <Route path="/history" element={<Layout><HistoryPage /></Layout>} />
           <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
           <Route path="/demo/schaeffler" element={<Layout><DemoSchaeffler /></Layout>} />
