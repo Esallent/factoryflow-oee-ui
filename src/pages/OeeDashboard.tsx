@@ -236,15 +236,39 @@ export default function OeeDashboard() {
           <div className="space-y-2">
             <Label>{t('select_range')}</Label>
             <Select
-              value={filters.range.toString()}
-              onValueChange={(value) => updateFilter("range", parseInt(value))}
+              value={filters.range_type}
+              onValueChange={(value) => {
+                updateFilter("range_type", value);
+                // Update range days based on preset
+                const rangeDays: Record<string, number> = {
+                  last_7_days: 7,
+                  last_14_days: 14,
+                  last_30_days: 30,
+                  this_week: 7,
+                  last_week: 7,
+                  this_month: 30,
+                  last_month: 30,
+                  this_quarter: 90,
+                  this_year: 365,
+                  all_time: 365,
+                };
+                updateFilter("range", rangeDays[value] || 7);
+              }}
             >
               <SelectTrigger className="bg-card border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card border-border z-50">
-                <SelectItem value="7">{t('days_7')}</SelectItem>
-                <SelectItem value="30">{t('days_30')}</SelectItem>
+                <SelectItem value="last_7_days">{t('range_last_7_days')}</SelectItem>
+                <SelectItem value="last_14_days">{t('range_last_14_days')}</SelectItem>
+                <SelectItem value="last_30_days">{t('range_last_30_days')}</SelectItem>
+                <SelectItem value="this_week">{t('range_this_week')}</SelectItem>
+                <SelectItem value="last_week">{t('range_last_week')}</SelectItem>
+                <SelectItem value="this_month">{t('range_this_month')}</SelectItem>
+                <SelectItem value="last_month">{t('range_last_month')}</SelectItem>
+                <SelectItem value="this_quarter">{t('range_this_quarter')}</SelectItem>
+                <SelectItem value="this_year">{t('range_this_year')}</SelectItem>
+                <SelectItem value="all_time">{t('range_all_time')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
