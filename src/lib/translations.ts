@@ -244,6 +244,23 @@ export const translations = {
     equipment_label: "Equipment",
     cycle_time_label: "Cycle Time",
     shift_label: "Shift",
+    
+    // Shifts
+    shifts: "Shifts",
+    shifts_configuration: "Shifts Configuration",
+    shifts_configuration_subtitle: "Configure work shifts for production lines",
+    shift_name: "Shift Name",
+    shift_name_placeholder: "e.g., Morning Shift",
+    start_time: "Start Time",
+    end_time: "End Time",
+    shift_duration: "Duration",
+    add_shift: "Add Shift",
+    edit_shift: "Edit Shift",
+    delete_shift_confirm: "Are you sure you want to delete this shift?",
+    no_shifts_configured: "No shifts configured yet",
+    add_first_shift: "Add your first shift",
+    configuring_shifts_for_line: "Configuring shifts for the selected line",
+    shift_active_description: "Enable or disable this shift",
   },
   es: {
     // Navigation
@@ -490,6 +507,23 @@ export const translations = {
     equipment_label: "Equipo",
     cycle_time_label: "Tiempo de Ciclo",
     shift_label: "Turno",
+    
+    // Shifts
+    shifts: "Turnos",
+    shifts_configuration: "Configuración de turnos",
+    shifts_configuration_subtitle: "Configure los turnos de trabajo para las líneas de producción",
+    shift_name: "Nombre del turno",
+    shift_name_placeholder: "ej., Turno mañana",
+    start_time: "Hora de inicio",
+    end_time: "Hora de fin",
+    shift_duration: "Duración",
+    add_shift: "Agregar turno",
+    edit_shift: "Editar turno",
+    delete_shift_confirm: "¿Está seguro que desea eliminar este turno?",
+    no_shifts_configured: "No hay turnos configurados aún",
+    add_first_shift: "Agregue su primer turno",
+    configuring_shifts_for_line: "Configurando turnos para la línea seleccionada",
+    shift_active_description: "Activar o desactivar este turno",
   },
 };
 

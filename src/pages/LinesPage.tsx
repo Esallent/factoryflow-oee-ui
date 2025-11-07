@@ -4,6 +4,7 @@ import { GeneralTab } from "@/components/lines/GeneralTab";
 import { EquipmentTab } from "@/components/lines/EquipmentTab";
 import { ActiveLinkTab } from "@/components/lines/ActiveLinkTab";
 import { DowntimeCategoriesTab } from "@/components/lines/DowntimeCategoriesTab";
+import { ShiftsTab } from "@/components/lines/ShiftsTab";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/LanguageContext";
 
@@ -22,9 +23,10 @@ export default function LinesPage() {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-sidebar border border-border">
+        <TabsList className="grid w-full grid-cols-5 bg-sidebar border border-border">
           <TabsTrigger value="general">{t('lines')}</TabsTrigger>
           <TabsTrigger value="equipment">{t('select_equipment')}</TabsTrigger>
+          <TabsTrigger value="shifts">{t('shifts')}</TabsTrigger>
           <TabsTrigger value="downtime-categories">{t('downtime_categories')}</TabsTrigger>
           <TabsTrigger value="active-link">{t('active')}</TabsTrigger>
         </TabsList>
@@ -40,6 +42,12 @@ export default function LinesPage() {
             selectedLineId={selectedLineId}
             onEquipmentSelect={setSelectedEquipmentId}
           />
+        </TabsContent>
+
+        <TabsContent value="shifts" className="mt-6">
+          <Card className="p-6 bg-card border-border">
+            <ShiftsTab selectedLineId={selectedLineId} />
+          </Card>
         </TabsContent>
 
         <TabsContent value="downtime-categories" className="mt-6">
