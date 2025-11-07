@@ -66,70 +66,71 @@ export function OeeWaterfallChart({ data, isLoading }: OeeWaterfallChartProps) {
     {
       name: "Tiempo de Turno",
       shortName: "TF",
-      base: 0,
-      value: TF,
-      loss: 0,
+      timeValue: TF,
+      lossValue: 0,
       fill: "#3B82F6",
-      description: "Tiempo total disponible en el turno"
+      lossColor: "#3B82F6",
+      description: "Tiempo total disponible en el turno",
+      lossDescription: ""
     },
     {
       name: "Tiempo Planificado",
       shortName: "TP",
-      base: 0,
-      value: TP,
-      loss: plannedDowntime,
+      timeValue: TP,
+      lossValue: plannedDowntime,
       fill: "#64748B",
       lossColor: "#94A3B8",
-      description: "Paradas planificadas"
+      description: "Tiempo planificado después de paradas",
+      lossDescription: "Paradas planificadas"
     },
     {
       name: "Tiempo de Funcionamiento",
       shortName: "TO",
-      base: 0,
-      value: TO,
-      loss: unplannedDowntime,
+      timeValue: TO,
+      lossValue: unplannedDowntime,
       fill: "#EF4444",
       lossColor: "#F87171",
-      description: "Paradas no planificadas"
+      description: "Tiempo de funcionamiento efectivo",
+      lossDescription: "Paradas no planificadas"
     },
     {
       name: "Tiempo Neto Operativo",
       shortName: "TNO",
-      base: 0,
-      value: TNO,
-      loss: performanceLoss,
+      timeValue: TNO,
+      lossValue: performanceLoss,
       fill: "#F59E0B",
       lossColor: "#FBBF24",
-      description: "Pérdidas de rendimiento"
+      description: "Tiempo operativo neto",
+      lossDescription: "Pérdidas de rendimiento"
     },
     {
       name: "Tiempo de Valor Neto",
       shortName: "TNV",
-      base: 0,
-      value: TNV,
-      loss: qualityLoss,
+      timeValue: TNV,
+      lossValue: qualityLoss,
       fill: "#10B981",
       lossColor: "#34D399",
-      description: "Pérdidas de calidad"
+      description: "Tiempo de valor neto (OEE)",
+      lossDescription: "Pérdidas de calidad"
     }
   ];
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      const lossPercent = data.loss > 0 ? ((data.loss / TF) * 100).toFixed(1) : 0;
-      const valuePercent = ((data.value / TF) * 100).toFixed(1);
+      const lossPercent = data.lossValue > 0 ? ((data.lossValue / TF) * 100).toFixed(1) : 0;
+      const valuePercent = ((data.timeValue / TF) * 100).toFixed(1);
       
       return (
         <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
-          <p className="font-semibold mb-2">{data.name}</p>
+          <p className="font-semibold mb-2">{data.name} ({data.shortName})</p>
           <p className="text-sm text-muted-foreground mb-2">{data.description}</p>
           <p className="text-sm">
-            <span className="font-medium">Duración:</span> {data.value.toFixed(1)} min ({valuePercent}%)
+            <span className="font-medium">Duración:</span> {data.timeValue.toFixed(1)} min ({valuePercent}%)
           </p>
-          {data.loss > 0 && (
-            <p className="text-sm text-destructive">
-              <span className="font-medium">Pérdidas:</span> -{data.loss.toFixed(1)} min (-{lossPercent}%)
+          {data.lossValue > 0 && (
+            <p className="text-sm text-destructive mt-1">
+              <span className="font-medium">{data.lossDescription}:</span> -{data.lossValue.toFixed(1)} min (-{lossPercent}%)
             </p>
           )}
         </div>
@@ -171,20 +172,19 @@ export function OeeWaterfallChart({ data, isLoading }: OeeWaterfallChartProps) {
           />
           <Tooltip content={<CustomTooltip />} />
           
-          {/* Main bars showing actual time */}
-          <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive={true}>
+          {/* Stacked bars: time value + loss value */}
+          <Bar dataKey="timeValue" stackId="a" fill="#3B82F6" radius={[0, 0, 0, 0]} isAnimationActive={true}>
             {waterfallData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.fill} />
+              <Cell key={`time-${index}`} fill={entry.fill} />
             ))}
           </Bar>
           
-          {/* Loss bars stacked on top */}
-          <Bar dataKey="loss" stackId="stack" radius={[4, 4, 0, 0]} isAnimationActive={true}>
+          <Bar dataKey="lossValue" stackId="a" fill="#94A3B8" radius={[4, 4, 0, 0]} isAnimationActive={true}>
             {waterfallData.map((entry, index) => (
               <Cell 
                 key={`loss-${index}`} 
-                fill={entry.lossColor || entry.fill}
-                opacity={0.6}
+                fill={entry.lossColor}
+                opacity={0.7}
               />
             ))}
           </Bar>
@@ -208,12 +208,12 @@ export function OeeWaterfallChart({ data, isLoading }: OeeWaterfallChartProps) {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{item.name} ({item.shortName})</span>
                       <span className="text-sm text-muted-foreground">
-                        {item.value.toFixed(1)} min ({((item.value / TF) * 100).toFixed(1)}%)
+                        {item.timeValue.toFixed(1)} min ({((item.timeValue / TF) * 100).toFixed(1)}%)
                       </span>
                     </div>
-                    {item.loss > 0 && (
+                    {item.lossValue > 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Pérdidas: {item.loss.toFixed(1)} min
+                        Pérdidas: {item.lossValue.toFixed(1)} min
                       </p>
                     )}
                   </div>
