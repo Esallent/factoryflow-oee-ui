@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Form,
   FormControl,
@@ -32,7 +30,6 @@ const formSchema = z.object({
     .min(0.1, "Design cycle time must be at least 0.1 minutes")
     .max(1440, "Design cycle time cannot exceed 1440 minutes"),
   active_flag: z.boolean(),
-  associated_template_ids: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -43,7 +40,6 @@ interface Equipment {
   equipment_name: string;
   design_cycle_time_min: number;
   active_flag: boolean;
-  associated_template_ids?: string[];
 }
 
 interface EquipmentDialogProps {
@@ -51,7 +47,6 @@ interface EquipmentDialogProps {
   onOpenChange: (open: boolean) => void;
   equipment: Equipment | null;
   onSave: (data: Omit<Equipment, "id">) => void;
-  availableTemplates: Array<{ id: string; name: string }>;
 }
 
 export function EquipmentDialog({
@@ -59,10 +54,8 @@ export function EquipmentDialog({
   onOpenChange,
   equipment,
   onSave,
-  availableTemplates,
 }: EquipmentDialogProps) {
   const { t } = useTranslation();
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -71,7 +64,6 @@ export function EquipmentDialog({
       equipment_name: "",
       design_cycle_time_min: 1.0,
       active_flag: true,
-      associated_template_ids: [],
     },
   });
 
@@ -82,28 +74,16 @@ export function EquipmentDialog({
         equipment_name: equipment.equipment_name,
         design_cycle_time_min: equipment.design_cycle_time_min,
         active_flag: equipment.active_flag,
-        associated_template_ids: equipment.associated_template_ids || [],
       });
-      setSelectedTemplates(equipment.associated_template_ids || []);
     } else {
       form.reset({
         equipment_code: "",
         equipment_name: "",
         design_cycle_time_min: 1.0,
         active_flag: true,
-        associated_template_ids: [],
       });
-      setSelectedTemplates([]);
     }
   }, [equipment, form]);
-
-  const toggleTemplate = (templateId: string) => {
-    const newSelection = selectedTemplates.includes(templateId)
-      ? selectedTemplates.filter(id => id !== templateId)
-      : [...selectedTemplates, templateId];
-    setSelectedTemplates(newSelection);
-    form.setValue("associated_template_ids", newSelection);
-  };
 
   const onSubmit = (data: FormValues) => {
     onSave({
@@ -111,10 +91,8 @@ export function EquipmentDialog({
       equipment_name: data.equipment_name,
       design_cycle_time_min: data.design_cycle_time_min,
       active_flag: data.active_flag,
-      associated_template_ids: selectedTemplates,
     });
     form.reset();
-    setSelectedTemplates([]);
     onOpenChange(false);
   };
 
@@ -210,41 +188,6 @@ export function EquipmentDialog({
                 </FormItem>
               )}
             />
-
-            {/* Templates Association */}
-            <div className="space-y-2">
-              <FormLabel>{t("associated_templates")}</FormLabel>
-              <div className="border border-border rounded-lg p-3 bg-sidebar">
-                {availableTemplates.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-2">
-                    {t("no_templates")}
-                  </p>
-                ) : (
-                  <ScrollArea className="h-[120px]">
-                    <div className="space-y-2">
-                      {availableTemplates.map((template) => (
-                        <div key={template.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={template.id}
-                            checked={selectedTemplates.includes(template.id)}
-                            onCheckedChange={() => toggleTemplate(template.id)}
-                          />
-                          <label
-                            htmlFor={template.id}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {template.name}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {selectedTemplates.length} {t("template_plural")} {t("equipment_selected")}
-              </p>
-            </div>
 
             <div className="flex justify-end gap-3 pt-4">
               <Button

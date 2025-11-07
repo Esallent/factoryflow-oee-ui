@@ -46,13 +46,12 @@ interface DowntimeCategory {
   name: string;
 }
 
-// Mock downtime categories - replace with API call to /dim_downtime
+// Mock downtime categories from unified catalog - replace with API call
 const initialCategories: DowntimeCategory[] = [
-  { code: "MAINT", name: "Maintenance" },
-  { code: "SETUP", name: "Setup/Changeover" },
-  { code: "BREAK", name: "Break" },
   { code: "MATERIAL", name: "Material Shortage" },
   { code: "QUALITY", name: "Quality Issue" },
+  { code: "ELECTRICAL", name: "Electrical Failure" },
+  { code: "MECHANICAL", name: "Mechanical Failure" },
 ];
 
 export function UnplannedDowntimesSection({
@@ -172,7 +171,6 @@ export function UnplannedDowntimesSection({
                         className="gap-1"
                       >
                         <PlusCircle className="h-4 w-4" />
-                        {t("new")}
                       </Button>
                     </div>
                   </div>

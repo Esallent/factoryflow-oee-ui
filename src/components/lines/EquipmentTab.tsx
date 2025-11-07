@@ -13,7 +13,6 @@ interface Equipment {
   equipment_name: string;
   design_cycle_time_min: number;
   active_flag: boolean;
-  associated_template_ids?: string[];
 }
 
 interface EquipmentTabProps {
@@ -29,7 +28,6 @@ const mockEquipment: Equipment[] = [
     equipment_name: "CNC Machine #1", 
     design_cycle_time_min: 2.5, 
     active_flag: true,
-    associated_template_ids: ["dt-1", "dt-2"],
   },
   { 
     id: "eq-2", 
@@ -37,7 +35,6 @@ const mockEquipment: Equipment[] = [
     equipment_name: "CNC Machine #2", 
     design_cycle_time_min: 3.0, 
     active_flag: true,
-    associated_template_ids: ["dt-1"],
   },
   { 
     id: "eq-3", 
@@ -45,15 +42,7 @@ const mockEquipment: Equipment[] = [
     equipment_name: "Robotic Arm #1", 
     design_cycle_time_min: 1.8, 
     active_flag: false,
-    associated_template_ids: [],
   },
-];
-
-// Mock templates - replace with actual API call
-const mockTemplates = [
-  { id: "dt-1", name: "Lunch Break" },
-  { id: "dt-2", name: "Tool Change" },
-  { id: "dt-3", name: "Maintenance Check" },
 ];
 
 export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTabProps) {
@@ -145,17 +134,6 @@ export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTab
       ),
     },
     {
-      header: t("downtime_templates"),
-      accessor: (eq: Equipment) => {
-        const count = eq.associated_template_ids?.length || 0;
-        return (
-          <Badge variant={count > 0 ? "default" : "secondary"} className="text-xs">
-            {count} {count === 1 ? t("template_singular") : t("template_plural")}
-          </Badge>
-        );
-      },
-    },
-    {
       header: "Status",
       accessor: (eq: Equipment) => (
         <Badge variant={eq.active_flag ? "default" : "secondary"}>
@@ -223,7 +201,6 @@ export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTab
         onOpenChange={setDialogOpen}
         equipment={editingEquipment}
         onSave={handleSave}
-        availableTemplates={mockTemplates}
       />
     </div>
   );
