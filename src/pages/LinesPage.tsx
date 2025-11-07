@@ -2,9 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralTab } from "@/components/lines/GeneralTab";
 import { EquipmentTab } from "@/components/lines/EquipmentTab";
-import { ActiveLinkTab } from "@/components/lines/ActiveLinkTab";
 import { DowntimeCategoriesTab } from "@/components/lines/DowntimeCategoriesTab";
-import { ShiftsTab } from "@/components/lines/ShiftsTab";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/LanguageContext";
 
@@ -22,16 +20,14 @@ export default function LinesPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-sidebar border border-border">
-          <TabsTrigger value="general">{t('lines')}</TabsTrigger>
-          <TabsTrigger value="equipment">{t('select_equipment')}</TabsTrigger>
-          <TabsTrigger value="shifts">{t('shifts')}</TabsTrigger>
-          <TabsTrigger value="downtime-categories">{t('downtime_categories')}</TabsTrigger>
-          <TabsTrigger value="active-link">{t('active')}</TabsTrigger>
+      <Tabs defaultValue="lines" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 bg-sidebar border border-border">
+          <TabsTrigger value="lines">{t('lines')}</TabsTrigger>
+          <TabsTrigger value="equipment">{t('equipment')}</TabsTrigger>
+          <TabsTrigger value="downtimes">{t('downtimes')}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="mt-6">
+        <TabsContent value="lines" className="mt-6">
           <Card className="p-6 bg-card border-border">
             <GeneralTab onLineSelect={setSelectedLineId} />
           </Card>
@@ -44,21 +40,9 @@ export default function LinesPage() {
           />
         </TabsContent>
 
-        <TabsContent value="shifts" className="mt-6">
-          <Card className="p-6 bg-card border-border">
-            <ShiftsTab selectedLineId={selectedLineId} />
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="downtime-categories" className="mt-6">
+        <TabsContent value="downtimes" className="mt-6">
           <Card className="p-6 bg-card border-border">
             <DowntimeCategoriesTab />
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="active-link" className="mt-6">
-          <Card className="p-6 bg-card border-border">
-            <ActiveLinkTab selectedLineId={selectedLineId} />
           </Card>
         </TabsContent>
       </Tabs>
