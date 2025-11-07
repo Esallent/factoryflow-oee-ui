@@ -275,28 +275,22 @@ export default function OeeDashboardV2() {
         </div>
       )}
 
+      {/* Trend Chart with Comparison Lines */}
+      {!noDataWarning && (
+        <OeeTrendChart 
+          data={dailyData} 
+          previousData={previousData}
+          isLoading={isLoading}
+          compareEnabled={filters.compare_enabled}
+        />
+      )}
+
       {/* Waterfall Chart - Loss Cascade */}
       {!noDataWarning && (
         <OeeWaterfallChart 
           data={dailyData} 
           isLoading={isLoading}
         />
-      )}
-
-      {/* Trend Chart with Comparison Lines */}
-      {!noDataWarning && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <LineChartIcon className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">Análisis de Tendencias</h2>
-          </div>
-          <OeeTrendChart 
-            data={dailyData} 
-            previousData={previousData}
-            isLoading={isLoading}
-            compareEnabled={filters.compare_enabled}
-          />
-        </div>
       )}
     </div>
   );

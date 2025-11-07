@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { LineChart as LineChartIcon } from "lucide-react";
 
 interface DailyOeeData {
   calendar_date: string;
@@ -23,8 +25,26 @@ interface OeeTrendChartProps {
   compareEnabled?: boolean;
 }
 
+interface MetricVisibility {
+  oee: boolean;
+  availability: boolean;
+  performance: boolean;
+  quality: boolean;
+}
+
 export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabled = false }: OeeTrendChartProps) {
   const { t } = useTranslation();
+  
+  const [visibleMetrics, setVisibleMetrics] = useState<MetricVisibility>({
+    oee: true,
+    availability: true,
+    performance: true,
+    quality: true,
+  });
+
+  const toggleMetric = (metric: keyof MetricVisibility) => {
+    setVisibleMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
+  };
   
   if (isLoading) {
     return (
@@ -70,14 +90,31 @@ export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabl
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const currentData = payload.filter((p: any) => !p.name.startsWith("Prev"));
+      const prevData = payload.filter((p: any) => p.name.startsWith("Prev"));
+      
       return (
         <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
           <p className="font-semibold mb-2">{payload[0].payload.fullDate}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}%
-            </p>
-          ))}
+          
+          {currentData.map((entry: any, index: number) => {
+            const metricName = entry.name;
+            const prevEntry = prevData.find((p: any) => p.name === `Prev ${metricName}`);
+            const delta = prevEntry ? entry.value - prevEntry.value : null;
+            
+            return (
+              <div key={index} className="mb-1">
+                <p className="text-sm font-medium" style={{ color: entry.color }}>
+                  {metricName}: {entry.value}%
+                </p>
+                {delta !== null && (
+                  <p className={`text-xs ml-2 ${delta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {prevEntry.value}% → {delta >= 0 ? '↑' : '↓'} {Math.abs(delta).toFixed(1)}%
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       );
     }
@@ -86,11 +123,56 @@ export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabl
 
   return (
     <Card className="p-6 bg-card border-border">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-1">{t("oee_trend_analysis")}</h2>
-        <p className="text-sm text-muted-foreground">
-          {t("daily_metrics_subtitle")}
-        </p>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <LineChartIcon className="h-5 w-5 text-primary" />
+          <div>
+            <h2 className="text-xl font-semibold mb-1">Análisis de tendencia OEE</h2>
+            <p className="text-sm text-muted-foreground">
+              {t("daily_metrics_subtitle")}
+            </p>
+          </div>
+        </div>
+        
+        {/* Metric Selector */}
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant={visibleMetrics.oee ? "default" : "outline"}
+            onClick={() => toggleMetric('oee')}
+            className="transition-all duration-300"
+            style={visibleMetrics.oee ? { backgroundColor: 'hsl(142, 76%, 36%)', borderColor: 'hsl(142, 76%, 36%)' } : {}}
+          >
+            OEE
+          </Button>
+          <Button
+            size="sm"
+            variant={visibleMetrics.availability ? "default" : "outline"}
+            onClick={() => toggleMetric('availability')}
+            className="transition-all duration-300"
+            style={visibleMetrics.availability ? { backgroundColor: 'hsl(217, 91%, 60%)', borderColor: 'hsl(217, 91%, 60%)' } : {}}
+          >
+            Disponibilidad
+          </Button>
+          <Button
+            size="sm"
+            variant={visibleMetrics.performance ? "default" : "outline"}
+            onClick={() => toggleMetric('performance')}
+            className="transition-all duration-300"
+            style={visibleMetrics.performance ? { backgroundColor: 'hsl(271, 81%, 56%)', borderColor: 'hsl(271, 81%, 56%)' } : {}}
+          >
+            Rendimiento
+          </Button>
+          <Button
+            size="sm"
+            variant={visibleMetrics.quality ? "default" : "outline"}
+            onClick={() => toggleMetric('quality')}
+            className="transition-all duration-300"
+            style={visibleMetrics.quality ? { backgroundColor: 'hsl(158, 64%, 52%)', borderColor: 'hsl(158, 64%, 52%)' } : {}}
+          >
+            Calidad
+          </Button>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={400}>
@@ -114,76 +196,107 @@ export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabl
           <Legend
             wrapperStyle={{ fontSize: "14px" }}
             iconType="line"
+            formatter={(value) => {
+              if (value.startsWith("Prev ")) {
+                return `${value.replace("Prev ", "")} (Período anterior)`;
+              }
+              return value;
+            }}
           />
-          <Line
-            type="monotone"
-            dataKey="OEE"
-            stroke="#27ae60"
-            strokeWidth={3}
-            dot={{ r: 4 }}
-            activeDot={{ r: 6 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="Availability"
-            stroke="#3498db"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            strokeDasharray="5 5"
-          />
-          <Line
-            type="monotone"
-            dataKey="Performance"
-            stroke="#9b59b6"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            strokeDasharray="5 5"
-          />
-          <Line
-            type="monotone"
-            dataKey="Quality"
-            stroke="#2ecc71"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            strokeDasharray="5 5"
-          />
+          
+          {/* Current Period Lines */}
+          {visibleMetrics.oee && (
+            <Line
+              type="monotone"
+              dataKey="OEE"
+              stroke="#27ae60"
+              strokeWidth={2.5}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+              className="transition-opacity duration-300"
+            />
+          )}
+          {visibleMetrics.availability && (
+            <Line
+              type="monotone"
+              dataKey="Availability"
+              stroke="#3498db"
+              strokeWidth={2.5}
+              dot={{ r: 3 }}
+              strokeDasharray="5 5"
+              className="transition-opacity duration-300"
+            />
+          )}
+          {visibleMetrics.performance && (
+            <Line
+              type="monotone"
+              dataKey="Performance"
+              stroke="#9b59b6"
+              strokeWidth={2.5}
+              dot={{ r: 3 }}
+              strokeDasharray="5 5"
+              className="transition-opacity duration-300"
+            />
+          )}
+          {visibleMetrics.quality && (
+            <Line
+              type="monotone"
+              dataKey="Quality"
+              stroke="#2ecc71"
+              strokeWidth={2.5}
+              dot={{ r: 3 }}
+              strokeDasharray="5 5"
+              className="transition-opacity duration-300"
+            />
+          )}
+          
+          {/* Previous Period Lines */}
           {compareEnabled && (
             <>
-              <Line
-                type="monotone"
-                dataKey="Prev OEE"
-                stroke="#27ae60"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-                opacity={0.5}
-              />
-              <Line
-                type="monotone"
-                dataKey="Prev Availability"
-                stroke="#3498db"
-                strokeWidth={1}
-                dot={{ r: 2 }}
-                strokeDasharray="3 3"
-                opacity={0.5}
-              />
-              <Line
-                type="monotone"
-                dataKey="Prev Performance"
-                stroke="#9b59b6"
-                strokeWidth={1}
-                dot={{ r: 2 }}
-                strokeDasharray="3 3"
-                opacity={0.5}
-              />
-              <Line
-                type="monotone"
-                dataKey="Prev Quality"
-                stroke="#2ecc71"
-                strokeWidth={1}
-                dot={{ r: 2 }}
-                strokeDasharray="3 3"
-                opacity={0.5}
-              />
+              {visibleMetrics.oee && (
+                <Line
+                  type="monotone"
+                  dataKey="Prev OEE"
+                  stroke="rgba(34, 197, 94, 0.4)"
+                  strokeWidth={1.5}
+                  dot={{ r: 2 }}
+                  strokeDasharray="2 2"
+                  className="transition-opacity duration-300"
+                />
+              )}
+              {visibleMetrics.availability && (
+                <Line
+                  type="monotone"
+                  dataKey="Prev Availability"
+                  stroke="rgba(59, 130, 246, 0.4)"
+                  strokeWidth={1.5}
+                  dot={{ r: 2 }}
+                  strokeDasharray="2 2"
+                  className="transition-opacity duration-300"
+                />
+              )}
+              {visibleMetrics.performance && (
+                <Line
+                  type="monotone"
+                  dataKey="Prev Performance"
+                  stroke="rgba(168, 85, 247, 0.4)"
+                  strokeWidth={1.5}
+                  dot={{ r: 2 }}
+                  strokeDasharray="2 2"
+                  className="transition-opacity duration-300"
+                />
+              )}
+              {visibleMetrics.quality && (
+                <Line
+                  type="monotone"
+                  dataKey="Prev Quality"
+                  stroke="rgba(16, 185, 129, 0.4)"
+                  strokeWidth={1.5}
+                  dot={{ r: 2 }}
+                  strokeDasharray="2 2"
+                  className="transition-opacity duration-300"
+                />
+              )}
             </>
           )}
         </LineChart>

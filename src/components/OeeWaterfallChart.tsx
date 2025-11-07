@@ -1,10 +1,8 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslation } from "@/contexts/LanguageContext";
-import { Info } from "lucide-react";
-import { Tooltip as TooltipUI, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BarChart3 } from "lucide-react";
 
 interface DailyOeeData {
   calendar_date: string;
@@ -25,12 +23,10 @@ interface OeeWaterfallChartProps {
 }
 
 export function OeeWaterfallChart({ data, isLoading }: OeeWaterfallChartProps) {
-  const { t } = useTranslation();
-
   if (isLoading) {
     return (
       <Card className="p-6 bg-card border-border">
-        <Skeleton className="h-[400px] w-full" />
+        <Skeleton className="h-[500px] w-full" />
       </Card>
     );
   }
@@ -38,144 +34,104 @@ export function OeeWaterfallChart({ data, isLoading }: OeeWaterfallChartProps) {
   if (data.length === 0) {
     return (
       <Card className="p-8 text-center bg-card border-border">
-        <p className="text-muted-foreground">No hay datos para mostrar la cascada de pérdidas</p>
+        <p className="text-muted-foreground">No hay datos disponibles para el análisis de cascada</p>
       </Card>
     );
   }
 
-  // Calculate average metrics
-  const totals = data.reduce(
-    (acc, day) => ({
-      availability: acc.availability + day.availability_avg,
-      performance: acc.performance + day.performance_avg,
-      quality: acc.quality + day.quality_avg,
-      oee: acc.oee + day.oee_avg,
-    }),
-    { availability: 0, performance: 0, quality: 0, oee: 0 }
-  );
+  // Calculate average metrics from daily data
+  const avgAvailability = data.reduce((sum, d) => sum + d.availability_avg, 0) / data.length;
+  const avgPerformance = data.reduce((sum, d) => sum + d.performance_avg, 0) / data.length;
+  const avgQuality = data.reduce((sum, d) => sum + d.quality_avg, 0) / data.length;
+  const avgOee = data.reduce((sum, d) => sum + d.oee_avg, 0) / data.length;
 
-  const count = data.length;
-  const avgAvailability = totals.availability / count;
-  const avgPerformance = totals.performance / count;
-  const avgQuality = totals.quality / count;
-  const avgOee = totals.oee / count;
-
-  // Calculate losses (as % of TF)
-  // TF = 100%
-  // TP = TF - Planned Downtime
-  // TO = TP - Unplanned Downtime (Availability Loss)
-  // TNO = TO - Performance Loss
-  // TNV = TNO - Quality Loss = OEE
-
-  const TF = 100; // Total Available Time
-  const plannedDowntimeLoss = 10; // Mock: ~10% planned downtime
-  const TP = TF - plannedDowntimeLoss;
-
-  const availabilityLoss = TP * (1 - avgAvailability);
-  const TO = TP - availabilityLoss;
-
+  // Use 480 minutes (8 hours) as base time for demonstration
+  const TF = 480; // Tiempo de Turno (total available time)
+  
+  // Calculate time hierarchy
+  const plannedDowntime = TF * (1 - avgAvailability) * 0.3; // Assume 30% of unavailability is planned
+  const TP = TF - plannedDowntime; // Tiempo Planificado
+  
+  const unplannedDowntime = TF * (1 - avgAvailability) * 0.7; // 70% is unplanned
+  const TO = TP - unplannedDowntime; // Tiempo de Funcionamiento
+  
   const performanceLoss = TO * (1 - avgPerformance);
-  const TNO = TO - performanceLoss;
-
+  const TNO = TO - performanceLoss; // Tiempo Neto Operativo
+  
   const qualityLoss = TNO * (1 - avgQuality);
-  const TNV = TNO - qualityLoss; // This should equal avgOee * TP
+  const TNV = TNO - qualityLoss; // Tiempo de Valor Neto (OEE result)
 
-  // Waterfall data structure
-  // Start at TF, cascade down with losses, end at TNV (OEE)
+  // Build waterfall data with stacked structure
   const waterfallData = [
     {
-      name: "TF",
-      label: "Tiempo Total (TF)",
+      name: "Tiempo de Turno",
+      shortName: "TF",
+      base: 0,
       value: TF,
-      displayValue: TF.toFixed(1),
-      fill: "#3498db",
-      type: "base",
-      tooltip: "Tiempo total disponible para producción",
+      loss: 0,
+      fill: "#3B82F6",
+      description: "Tiempo total disponible en el turno"
     },
     {
-      name: "Planned Loss",
-      label: "Paradas Planificadas",
-      value: -plannedDowntimeLoss,
-      displayValue: plannedDowntimeLoss.toFixed(1),
-      fill: "#95a5a6",
-      type: "loss",
-      tooltip: "Tiempo perdido por paradas planificadas (mantenimiento, breaks)",
-    },
-    {
-      name: "TP",
-      label: "Tiempo Planificado (TP)",
+      name: "Tiempo Planificado",
+      shortName: "TP",
+      base: 0,
       value: TP,
-      displayValue: TP.toFixed(1),
-      fill: "#3498db",
-      type: "milestone",
-      tooltip: "Tiempo disponible después de paradas planificadas",
+      loss: plannedDowntime,
+      fill: "#64748B",
+      lossColor: "#94A3B8",
+      description: "Paradas planificadas"
     },
     {
-      name: "Availability Loss",
-      label: "Pérdida Disponibilidad",
-      value: -availabilityLoss,
-      displayValue: availabilityLoss.toFixed(1),
-      fill: "#e74c3c",
-      type: "loss",
-      tooltip: "Tiempo perdido por paradas no planificadas (fallas, averías)",
-    },
-    {
-      name: "TO",
-      label: "Tiempo Operativo (TO)",
+      name: "Tiempo de Funcionamiento",
+      shortName: "TO",
+      base: 0,
       value: TO,
-      displayValue: TO.toFixed(1),
-      fill: "#3498db",
-      type: "milestone",
-      tooltip: "Tiempo efectivo de operación después de todas las paradas",
+      loss: unplannedDowntime,
+      fill: "#EF4444",
+      lossColor: "#F87171",
+      description: "Paradas no planificadas"
     },
     {
-      name: "Performance Loss",
-      label: "Pérdida Rendimiento",
-      value: -performanceLoss,
-      displayValue: performanceLoss.toFixed(1),
-      fill: "#f39c12",
-      type: "loss",
-      tooltip: "Tiempo perdido por velocidad reducida, microparadas",
-    },
-    {
-      name: "TNO",
-      label: "Tiempo Neto Operativo (TNO)",
+      name: "Tiempo Neto Operativo",
+      shortName: "TNO",
+      base: 0,
       value: TNO,
-      displayValue: TNO.toFixed(1),
-      fill: "#3498db",
-      type: "milestone",
-      tooltip: "Tiempo operativo a velocidad ideal",
+      loss: performanceLoss,
+      fill: "#F59E0B",
+      lossColor: "#FBBF24",
+      description: "Pérdidas de rendimiento"
     },
     {
-      name: "Quality Loss",
-      label: "Pérdida Calidad",
-      value: -qualityLoss,
-      displayValue: qualityLoss.toFixed(1),
-      fill: "#e67e22",
-      type: "loss",
-      tooltip: "Tiempo invertido en producir unidades defectuosas",
-    },
-    {
-      name: "TNV",
-      label: "Tiempo Neto Valioso (TNV = OEE)",
+      name: "Tiempo de Valor Neto",
+      shortName: "TNV",
+      base: 0,
       value: TNV,
-      displayValue: TNV.toFixed(1),
-      fill: "#27ae60",
-      type: "final",
-      tooltip: "Tiempo efectivo produciendo unidades de calidad (OEE final)",
-    },
+      loss: qualityLoss,
+      fill: "#10B981",
+      lossColor: "#34D399",
+      description: "Pérdidas de calidad"
+    }
   ];
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
+      const lossPercent = data.loss > 0 ? ((data.loss / TF) * 100).toFixed(1) : 0;
+      const valuePercent = ((data.value / TF) * 100).toFixed(1);
+      
       return (
         <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
-          <p className="font-semibold mb-1">{data.label}</p>
-          <p className="text-sm text-muted-foreground">{data.tooltip}</p>
-          <p className="text-lg font-bold mt-2" style={{ color: data.fill }}>
-            {Math.abs(parseFloat(data.displayValue))}%
+          <p className="font-semibold mb-2">{data.name}</p>
+          <p className="text-sm text-muted-foreground mb-2">{data.description}</p>
+          <p className="text-sm">
+            <span className="font-medium">Duración:</span> {data.value.toFixed(1)} min ({valuePercent}%)
           </p>
+          {data.loss > 0 && (
+            <p className="text-sm text-destructive">
+              <span className="font-medium">Pérdidas:</span> -{data.loss.toFixed(1)} min (-{lossPercent}%)
+            </p>
+          )}
         </div>
       );
     }
@@ -184,106 +140,117 @@ export function OeeWaterfallChart({ data, isLoading }: OeeWaterfallChartProps) {
 
   return (
     <Card className="p-6 bg-card border-border">
-      <div className="mb-4 flex items-start justify-between">
-        <div>
-          <h2 className="text-xl font-semibold mb-1">Cascada de Pérdidas OEE</h2>
-          <p className="text-sm text-muted-foreground">
-            Análisis jerárquico de tiempo: TF → TP → TO → TNO → TNV
-          </p>
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-semibold">Cascada de pérdidas OEE — Composición de tiempos productivos</h2>
         </div>
-        <TooltipProvider>
-          <TooltipUI>
-            <TooltipTrigger asChild>
-              <button className="p-2 hover:bg-muted/50 rounded-lg transition-colors">
-                <Info className="h-5 w-5 text-muted-foreground" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left" className="max-w-xs bg-popover border-border">
-              <p className="text-xs">
-                <strong>TF:</strong> Tiempo Total disponible<br />
-                <strong>TP:</strong> TF - Paradas Planificadas<br />
-                <strong>TO:</strong> TP - Pérdidas de Disponibilidad<br />
-                <strong>TNO:</strong> TO - Pérdidas de Rendimiento<br />
-                <strong>TNV (OEE):</strong> TNO - Pérdidas de Calidad
-              </p>
-            </TooltipContent>
-          </TooltipUI>
-        </TooltipProvider>
+        <p className="text-sm text-muted-foreground">
+          Visualización jerárquica de tiempos TF → TNV, con pérdidas apiladas sobre cada nivel
+        </p>
       </div>
 
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={450}>
         <BarChart
           data={waterfallData}
-          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+          margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis
             dataKey="name"
             stroke="hsl(var(--muted-foreground))"
-            style={{ fontSize: "11px" }}
             angle={-45}
             textAnchor="end"
-            height={80}
+            height={100}
+            style={{ fontSize: "12px" }}
           />
           <YAxis
             stroke="hsl(var(--muted-foreground))"
             style={{ fontSize: "12px" }}
-            domain={[0, 100]}
-            tickFormatter={(value) => `${value}%`}
+            label={{ value: 'Minutos', angle: -90, position: 'insideLeft' }}
           />
           <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine y={0} stroke="hsl(var(--border))" strokeWidth={2} />
-          <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+          
+          {/* Main bars showing actual time */}
+          <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive={true}>
             {waterfallData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.fill} />
+            ))}
+          </Bar>
+          
+          {/* Loss bars stacked on top */}
+          <Bar dataKey="loss" stackId="stack" radius={[4, 4, 0, 0]} isAnimationActive={true}>
+            {waterfallData.map((entry, index) => (
+              <Cell 
+                key={`loss-${index}`} 
+                fill={entry.lossColor || entry.fill}
+                opacity={0.6}
+              />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
 
-      {/* Legend explaining loss types */}
+      {/* Legend and Summary */}
       <div className="mt-6 pt-4 border-t border-border">
-        <p className="text-xs font-semibold text-muted-foreground mb-3">Tipos de pérdidas</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { label: "Paradas Planificadas", color: "#95a5a6", desc: "Mantenimiento, cambios, breaks" },
-            { label: "Disponibilidad", color: "#e74c3c", desc: "Fallas, averías no planificadas" },
-            { label: "Rendimiento", color: "#f39c12", desc: "Velocidad reducida, microparadas" },
-            { label: "Calidad", color: "#e67e22", desc: "Unidades defectuosas, retrabajos" },
-          ].map((loss) => (
-            <div key={loss.label} className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
-              <div
-                className="w-4 h-4 rounded mt-0.5 flex-shrink-0"
-                style={{ backgroundColor: loss.color }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground">{loss.label}</p>
-                <p className="text-xs text-muted-foreground">{loss.desc}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Time Hierarchy Legend */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-3">Jerarquía de Tiempos</p>
+            <div className="space-y-2">
+              {waterfallData.map((item) => (
+                <div key={item.shortName} className="flex items-center gap-3">
+                  <div
+                    className="w-4 h-4 rounded"
+                    style={{ backgroundColor: item.fill }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{item.name} ({item.shortName})</span>
+                      <span className="text-sm text-muted-foreground">
+                        {item.value.toFixed(1)} min ({((item.value / TF) * 100).toFixed(1)}%)
+                      </span>
+                    </div>
+                    {item.loss > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Pérdidas: {item.loss.toFixed(1)} min
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* OEE Metrics Summary */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-3">Resumen de Métricas OEE</p>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Disponibilidad</span>
+                <span className="text-sm font-semibold text-primary">
+                  {(avgAvailability * 100).toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Rendimiento</span>
+                <span className="text-sm font-semibold text-primary">
+                  {(avgPerformance * 100).toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Calidad</span>
+                <span className="text-sm font-semibold text-primary">
+                  {(avgQuality * 100).toFixed(1)}%
+                </span>
+              </div>
+              <div className="pt-3 border-t border-border flex justify-between items-center">
+                <span className="text-sm font-semibold">OEE General</span>
+                <span className="text-lg font-bold text-success">
+                  {(avgOee * 100).toFixed(1)}%
+                </span>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-        <p className="text-xs font-semibold text-muted-foreground mb-2">Resumen de eficiencia</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-xs text-muted-foreground">Disponibilidad</p>
-            <p className="text-lg font-bold text-foreground">{(avgAvailability * 100).toFixed(1)}%</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Rendimiento</p>
-            <p className="text-lg font-bold text-foreground">{(avgPerformance * 100).toFixed(1)}%</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Calidad</p>
-            <p className="text-lg font-bold text-foreground">{(avgQuality * 100).toFixed(1)}%</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">OEE Total</p>
-            <p className="text-lg font-bold text-status-good">{(avgOee * 100).toFixed(1)}%</p>
           </div>
         </div>
       </div>
