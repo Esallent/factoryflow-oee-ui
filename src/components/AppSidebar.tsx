@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, History, Settings, Factory } from "lucide-react";
+import { LayoutDashboard, ClipboardList, History, Settings, Factory, Plug } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useTranslation } from "@/contexts/LanguageContext";
 
@@ -31,6 +31,7 @@ export function AppSidebar() {
     { title: t("dashboard"), url: "/dashboard", icon: LayoutDashboard },
     { title: t("record"), url: "/record", icon: ClipboardList },
     { title: t("history"), url: "/history", icon: History },
+    { title: "Integraciones", url: "/integrations", icon: Plug },
     { title: t("lines"), url: "/lines", icon: Settings },
   ];
 
