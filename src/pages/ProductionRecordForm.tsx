@@ -14,6 +14,7 @@ import { OEEKPICards } from "@/components/OEEKPICards";
 import { ValidationBanner } from "@/components/ui/validation-banner";
 import { handleValidationError, isGreaterThan, isLessOrEqual } from "@/lib/validation";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { UnplannedDowntimesSection, UnplannedDowntime } from "@/components/UnplannedDowntimesSection";
 
 const formSchema = z.object({
   id_line: z.string().min(1, "Line is required"),
@@ -71,6 +72,7 @@ export default function ProductionRecordForm() {
   const [oeeMetrics, setOeeMetrics] = useState<OEEMetrics | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [validationError, setValidationError] = useState<string>("");
+  const [unplannedDowntimes, setUnplannedDowntimes] = useState<UnplannedDowntime[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -168,6 +170,32 @@ export default function ProductionRecordForm() {
   const onSubmit = async (data: FormValues) => {
     setValidationError("");
     
+    // Validate unplanned downtimes
+    for (const downtime of unplannedDowntimes) {
+      if (!downtime.category_code) {
+        setValidationError(t("category_required"));
+        return;
+      }
+      if (downtime.category_code === "OTRO" && !downtime.cause_detail?.trim()) {
+        setValidationError(t("cause_detail_required"));
+        return;
+      }
+      if (downtime.duration_min <= 0) {
+        setValidationError(t("duration_invalid"));
+        return;
+      }
+    }
+    
+    const totalUnplannedDowntime = unplannedDowntimes.reduce(
+      (sum, dt) => sum + dt.duration_min, 
+      0
+    );
+    
+    if (totalUnplannedDowntime > data.planned_time_min) {
+      setValidationError(t("total_downtime_exceeds"));
+      return;
+    }
+    
     try {
       // POST /api/v1/records
       // const response = await fetch('/api/v1/records', {
@@ -176,14 +204,20 @@ export default function ProductionRecordForm() {
       //   body: JSON.stringify({
       //     ...data,
       //     source: "manual",
-      //     source_detail: "Lovable_v2_form",
+      //     source_detail: "Lovable_v1.3r1_form",
+      //     unplanned_downtimes: unplannedDowntimes.map(dt => ({
+      //       category_code: dt.category_code,
+      //       duration_min: dt.duration_min,
+      //       cause_detail: dt.cause_detail || null,
+      //     })),
       //   }),
       // });
 
       console.log("Saving record:", {
         ...data,
         source: "manual",
-        source_detail: "Lovable_v2_form",
+        source_detail: "Lovable_v1.3r1_form",
+        unplanned_downtimes: unplannedDowntimes,
       });
 
       // Simulate success
@@ -195,6 +229,7 @@ export default function ProductionRecordForm() {
       // Reset form
       form.reset();
       setOeeMetrics(null);
+      setUnplannedDowntimes([]);
     } catch (error: any) {
       // Use global validation error handler
       const handled = await handleValidationError(error, form.setError);
@@ -503,6 +538,7 @@ export default function ProductionRecordForm() {
                   onClick={() => {
                     form.reset();
                     setOeeMetrics(null);
+                    setUnplannedDowntimes([]);
                   }}
                 >
                   {t('cancel')}
@@ -529,6 +565,13 @@ export default function ProductionRecordForm() {
           </Card>
         </div>
       </div>
+
+      {/* Unplanned Downtimes Section - Full Width Below */}
+      <UnplannedDowntimesSection
+        downtimes={unplannedDowntimes}
+        onChange={setUnplannedDowntimes}
+        shiftDurationMin={formValues.planned_time_min}
+      />
     </div>
   );
 }
