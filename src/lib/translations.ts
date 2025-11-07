@@ -119,6 +119,7 @@ export const translations = {
   category_required: "Category is required",
   cause_detail_required: "Cause detail is required for 'Other' category",
   total_downtime_exceeds: "Total downtime exceeds shift duration",
+  select_equipment_to_manage_templates: "Select an equipment from the Equipment tab to manage its planned downtime templates.",
   
     all_lines: "All Lines",
     all_equipment: "All Equipment",
@@ -322,6 +323,7 @@ export const translations = {
   category_required: "Debe seleccionar una causa",
   cause_detail_required: "Indique la causa específica",
   total_downtime_exceeds: "El total de paradas excede el tiempo del turno",
+  select_equipment_to_manage_templates: "Seleccione un equipo de la pestaña Equipos para gestionar sus plantillas de paradas planificadas.",
   
     all_lines: "Todas las líneas",
     all_equipment: "Todos los equipos",

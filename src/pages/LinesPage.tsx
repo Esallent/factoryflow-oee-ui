@@ -10,6 +10,7 @@ import { useTranslation } from "@/contexts/LanguageContext";
 export default function LinesPage() {
   const { t } = useTranslation();
   const [selectedLineId, setSelectedLineId] = useState<string>("");
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
 
   return (
     <div className="space-y-6">
@@ -35,12 +36,24 @@ export default function LinesPage() {
         </TabsContent>
 
         <TabsContent value="equipment" className="mt-6">
-          <EquipmentTab selectedLineId={selectedLineId} />
+          <EquipmentTab 
+            selectedLineId={selectedLineId}
+            onEquipmentSelect={setSelectedEquipmentId}
+          />
         </TabsContent>
 
         <TabsContent value="downtime-templates" className="mt-6">
           <Card className="p-6 bg-card border-border">
-            <DowntimeTemplatesTab selectedLineId={selectedLineId} />
+            {selectedEquipmentId ? (
+              <DowntimeTemplatesTab 
+                selectedEquipmentId={selectedEquipmentId}
+                selectedLineId={selectedLineId}
+              />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">{t('select_equipment_optional')}</p>
+              </div>
+            )}
           </Card>
         </TabsContent>
 

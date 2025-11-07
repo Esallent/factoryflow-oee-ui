@@ -18,12 +18,16 @@ interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
   emptyMessage?: string;
+  onRowClick?: (row: T) => void;
+  selectedRowId?: string | number;
 }
 
 export function DataTable<T extends { id?: string | number }>({ 
   data, 
   columns,
-  emptyMessage = "No data available"
+  emptyMessage = "No data available",
+  onRowClick,
+  selectedRowId
 }: DataTableProps<T>) {
   if (data.length === 0) {
     return (
@@ -46,17 +50,26 @@ export function DataTable<T extends { id?: string | number }>({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, rowIdx) => (
-            <TableRow key={row.id || rowIdx} className="border-border hover:bg-sidebar-accent/50">
-              {columns.map((column, colIdx) => (
-                <TableCell key={colIdx} className={column.className}>
-                  {typeof column.accessor === "function"
-                    ? column.accessor(row)
-                    : String(row[column.accessor])}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
+          {data.map((row, rowIdx) => {
+            const isSelected = row.id === selectedRowId;
+            return (
+              <TableRow 
+                key={row.id || rowIdx} 
+                className={`border-border transition-colors ${
+                  onRowClick ? 'cursor-pointer hover:bg-primary/10' : 'hover:bg-sidebar-accent/50'
+                } ${isSelected ? 'bg-primary/20 border-l-4 border-l-primary' : ''}`}
+                onClick={() => onRowClick?.(row)}
+              >
+                {columns.map((column, colIdx) => (
+                  <TableCell key={colIdx} className={column.className}>
+                    {typeof column.accessor === "function"
+                      ? column.accessor(row)
+                      : String(row[column.accessor])}
+                  </TableCell>
+                ))}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </Card>

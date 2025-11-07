@@ -16,6 +16,7 @@ interface Equipment {
 
 interface EquipmentTabProps {
   selectedLineId: string;
+  onEquipmentSelect?: (equipmentId: string) => void;
 }
 
 // Mock data - replace with API call
@@ -43,10 +44,16 @@ const mockEquipment: Equipment[] = [
   },
 ];
 
-export function EquipmentTab({ selectedLineId }: EquipmentTabProps) {
+export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTabProps) {
   const [equipment, setEquipment] = useState<Equipment[]>(mockEquipment);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<string>("");
+
+  const handleRowClick = (eq: Equipment) => {
+    setSelectedEquipment(eq.id);
+    onEquipmentSelect?.(eq.id);
+  };
 
   const handleAdd = () => {
     setEditingEquipment(null);
@@ -163,6 +170,8 @@ export function EquipmentTab({ selectedLineId }: EquipmentTabProps) {
         data={equipment}
         columns={columns}
         emptyMessage="No equipment configured. Add your first equipment to get started."
+        onRowClick={handleRowClick}
+        selectedRowId={selectedEquipment}
       />
 
       <EquipmentDialog

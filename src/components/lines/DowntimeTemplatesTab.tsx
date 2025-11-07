@@ -132,6 +132,7 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
         // PUT /equipment/{equipmentId}/downtime-templates/{id}
         // await fetch(`/api/v1/equipment/${selectedEquipmentId}/downtime-templates/${editingTemplate.id}`, {
         //   method: 'PUT',
+        //   headers: { 'Content-Type': 'application/json' },
         //   body: JSON.stringify(data),
         // });
 
@@ -142,15 +143,21 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
         );
       } else {
         // POST /equipment/{equipmentId}/downtime-templates
-        // const response = await fetch(`/api/v1/equipment/${selectedEquipmentId}/downtime-templates`, {
+        // await fetch(`/api/v1/equipment/${selectedEquipmentId}/downtime-templates`, {
         //   method: 'POST',
-        //   body: JSON.stringify(data),
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({
+        //     ...data,
+        //     equipment_id: selectedEquipmentId,
+        //     line_id: selectedLineId,
+        //   }),
         // });
-        // const newTemplate = await response.json();
 
         const newTemplate = {
           ...data,
           id: `dt-${Date.now()}`,
+          equipment_id: selectedEquipmentId,
+          line_id: selectedLineId,
         };
 
         setTemplates([...templates, newTemplate]);
@@ -181,32 +188,45 @@ export function DowntimeTemplatesTab({ selectedEquipmentId, selectedLineId }: Do
         </AlertDescription>
       </Alert>
 
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">{t("downtime_templates")}</h2>
-        <Button
-          onClick={() => {
-            setEditingTemplate(null);
-            setDialogOpen(true);
-          }}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          {t("add_template")}
-        </Button>
-      </div>
+      {!selectedEquipmentId && (
+        <Alert className="bg-yellow-500/10 border-yellow-500/30">
+          <Info className="h-4 w-4 text-yellow-400" />
+          <AlertDescription className="text-sm">
+            {t("select_equipment_to_manage_templates")}
+          </AlertDescription>
+        </Alert>
+      )}
 
-      <DataTable
-        data={templates}
-        columns={columns}
-        emptyMessage={t("no_templates")}
-      />
+      {selectedEquipmentId && (
+        <>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">{t("downtime_templates")}</h2>
+            <Button
+              onClick={() => {
+                setEditingTemplate(null);
+                setDialogOpen(true);
+              }}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              {t("add_template")}
+            </Button>
+          </div>
 
-      <DowntimeTemplateDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        template={editingTemplate}
-        onSave={handleSave}
-      />
+          <DataTable
+            data={templates}
+            columns={columns}
+            emptyMessage={t("no_templates")}
+          />
+
+          <DowntimeTemplateDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            template={editingTemplate}
+            onSave={handleSave}
+          />
+        </>
+      )}
     </div>
   );
 }
