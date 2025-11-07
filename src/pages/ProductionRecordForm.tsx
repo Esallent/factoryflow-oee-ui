@@ -176,10 +176,6 @@ export default function ProductionRecordForm() {
         setValidationError(t("category_required"));
         return;
       }
-      if (downtime.category_code === "OTRO" && !downtime.cause_detail?.trim()) {
-        setValidationError(t("cause_detail_required"));
-        return;
-      }
       if (downtime.duration_min <= 0) {
         setValidationError(t("duration_invalid"));
         return;

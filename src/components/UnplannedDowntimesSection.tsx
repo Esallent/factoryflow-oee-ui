@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, PlusCircle } from "lucide-react";
 import { useTranslation } from "@/contexts/LanguageContext";
 import {
   Collapsible,
@@ -18,10 +18,19 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export interface UnplannedDowntime {
   id: string;
   category_code: string;
+  category_name: string;
   duration_min: number;
   cause_detail?: string;
 }
@@ -32,14 +41,18 @@ interface UnplannedDowntimesSectionProps {
   shiftDurationMin: number;
 }
 
+interface DowntimeCategory {
+  code: string;
+  name: string;
+}
+
 // Mock downtime categories - replace with API call to /dim_downtime
-const downtimeCategories = [
+const initialCategories: DowntimeCategory[] = [
   { code: "MAINT", name: "Maintenance" },
   { code: "SETUP", name: "Setup/Changeover" },
   { code: "BREAK", name: "Break" },
   { code: "MATERIAL", name: "Material Shortage" },
   { code: "QUALITY", name: "Quality Issue" },
-  { code: "OTRO", name: "Other" },
 ];
 
 export function UnplannedDowntimesSection({
@@ -49,15 +62,33 @@ export function UnplannedDowntimesSection({
 }: UnplannedDowntimesSectionProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [categories, setCategories] = useState<DowntimeCategory[]>(initialCategories);
+  const [newCategoryDialogOpen, setNewCategoryDialogOpen] = useState(false);
+  const [newCategoryCode, setNewCategoryCode] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   const addDowntime = () => {
     const newDowntime: UnplannedDowntime = {
       id: `dt-${Date.now()}`,
       category_code: "",
+      category_name: "",
       duration_min: 0,
       cause_detail: "",
     };
     onChange([...downtimes, newDowntime]);
+  };
+
+  const handleAddNewCategory = () => {
+    if (newCategoryCode && newCategoryName) {
+      const newCategory = {
+        code: newCategoryCode.toUpperCase(),
+        name: newCategoryName,
+      };
+      setCategories([...categories, newCategory]);
+      setNewCategoryCode("");
+      setNewCategoryName("");
+      setNewCategoryDialogOpen(false);
+    }
   };
 
   const removeDowntime = (id: string) => {
@@ -65,11 +96,21 @@ export function UnplannedDowntimesSection({
   };
 
   const updateDowntime = (id: string, field: keyof UnplannedDowntime, value: any) => {
-    onChange(
-      downtimes.map((dt) =>
-        dt.id === id ? { ...dt, [field]: value } : dt
-      )
-    );
+    const updated = downtimes.map((dt) => {
+      if (dt.id === id) {
+        if (field === "category_code") {
+          const category = categories.find(c => c.code === value);
+          return { 
+            ...dt, 
+            category_code: value,
+            category_name: category?.name || ""
+          };
+        }
+        return { ...dt, [field]: value };
+      }
+      return dt;
+    });
+    onChange(updated);
   };
 
   const totalDuration = downtimes.reduce((sum, dt) => sum + (dt.duration_min || 0), 0);
@@ -105,33 +146,46 @@ export function UnplannedDowntimesSection({
                     <label className="text-sm font-medium mb-2 block">
                       {t("downtime_category")} *
                     </label>
-                    <Select
-                      value={downtime.category_code}
-                      onValueChange={(value) =>
-                        updateDowntime(downtime.id, "category_code", value)
-                      }
-                    >
-                      <SelectTrigger className="bg-card border-border">
-                        <SelectValue placeholder={t("category_required")} />
-                      </SelectTrigger>
-                      <SelectContent className="bg-card border-border z-50">
-                        {downtimeCategories.map((cat) => (
-                          <SelectItem key={cat.code} value={cat.code}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                      <Select
+                        value={downtime.category_code}
+                        onValueChange={(value) =>
+                          updateDowntime(downtime.id, "category_code", value)
+                        }
+                      >
+                        <SelectTrigger className="bg-card border-border flex-1">
+                          <SelectValue placeholder={t("select_or_create")} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-card border-border z-50">
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.code} value={cat.code}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewCategoryDialogOpen(true)}
+                        className="gap-1"
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                        {t("new")}
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium mb-2 block">
-                      {t("duration")} *
+                      {t("duration_minutes")} *
                     </label>
                     <Input
                       type="number"
                       step="0.1"
                       min="0"
+                      placeholder="0.0"
                       value={downtime.duration_min || ""}
                       onChange={(e) => {
                         const val = parseFloat(e.target.value);
@@ -146,7 +200,6 @@ export function UnplannedDowntimesSection({
                   <div className="md:col-span-5">
                     <label className="text-sm font-medium mb-2 block">
                       {t("cause_detail")}
-                      {downtime.category_code === "OTRO" && " *"}
                     </label>
                     <Textarea
                       value={downtime.cause_detail || ""}
@@ -155,11 +208,7 @@ export function UnplannedDowntimesSection({
                       }
                       className="bg-card border-border resize-none"
                       rows={1}
-                      placeholder={
-                        downtime.category_code === "OTRO"
-                          ? t("cause_detail_required")
-                          : t("cause_detail")
-                      }
+                      placeholder={t("optional_details")}
                     />
                   </div>
 
@@ -206,6 +255,52 @@ export function UnplannedDowntimesSection({
           </div>
         </CollapsibleContent>
       </Card>
+
+      <Dialog open={newCategoryDialogOpen} onOpenChange={setNewCategoryDialogOpen}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>{t("add_new_category")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="category-code">{t("category_code")} *</Label>
+              <Input
+                id="category-code"
+                placeholder="e.g., ELECTRICAL"
+                value={newCategoryCode}
+                onChange={(e) => setNewCategoryCode(e.target.value)}
+                className="bg-sidebar border-border"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category-name">{t("category_name")} *</Label>
+              <Input
+                id="category-name"
+                placeholder="e.g., Electrical Failure"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className="bg-sidebar border-border"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setNewCategoryDialogOpen(false)}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAddNewCategory}
+              disabled={!newCategoryCode || !newCategoryName}
+            >
+              {t("add")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Collapsible>
   );
 }
