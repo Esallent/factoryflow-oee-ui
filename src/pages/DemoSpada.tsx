@@ -16,11 +16,40 @@ import { EquipmentTechnicalData } from "@/components/EquipmentTechnicalData";
 export default function DemoSpada() {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
-  const companyKey = "company_2";
-  const companyData = demoDataset.fact_oee_hourly[companyKey];
-  const lineData = demoDataset.dim_line[companyKey];
-  const equipmentData = demoDataset.dim_equipment[companyKey];
-  const shiftData = demoDataset.dim_shift[companyKey];
+  
+  // Demo data for L.V. Spada
+  const shiftData = {
+    id_record: 2001,
+    id_line: 2,
+    id_equipment: 2,
+    id_shift: 1,
+    shift_started_at_tz: "2025-11-06T06:00:00-03:00",
+    planned_time_min: 540,
+    planned_downtime_min: 78,
+    unplanned_downtime_min: 78.25,
+    cycle_time_min: 0.36,
+    total_units: 1104,
+    defective_units: 15,
+    available_time_min: 479.6,
+    operating_time_min: 401,
+    theoretical_output_units: 1483,
+    availability_ratio: 0.809,
+    performance_ratio: 0.919,
+    quality_ratio: 0.986,
+    oee_total: 0.733,
+    oee_band_code: "acceptable",
+    oee_band_es: "Aceptable",
+    source: "demo_seed",
+    source_detail: "factoryos_demo_v1"
+  };
+
+  const lineData = {
+    company_name: "L.V. Spada"
+  };
+
+  const equipmentData = {
+    equipment_name: "Prensa Hidráulica PH-800"
+  };
 
   // Filter state with defaults
   const [filters, setFilters] = useState({
@@ -31,22 +60,23 @@ export default function DemoSpada() {
   });
 
   // Equipment technical data
+  const theoreticalCapacityHour = (60 / shiftData.cycle_time_min).toFixed(1);
   const technicalData = {
     line: "Línea de Ensamble Principal",
     equipment: "Prensa Hidráulica PH-800 (Torno Automático T.01)",
-    cycleTime: "0.296 min/pieza",
-    shiftDuration: "540 min",
-    theoreticalCapacityHour: "164.8 JPH",
-    theoreticalCapacityShift: "1317 JPSHIFT",
-    plannedDowntime: "60.5 min",
-    unplannedDowntime: "78.25 min"
+    cycleTime: `${shiftData.cycle_time_min.toFixed(3)} min/pieza`,
+    shiftDuration: `${shiftData.planned_time_min} min`,
+    theoreticalCapacityHour: `${theoreticalCapacityHour} JPH`,
+    theoreticalCapacityShift: `${shiftData.theoretical_output_units} JPSHIFT`,
+    plannedDowntime: `${shiftData.planned_downtime_min} min`,
+    unplannedDowntime: `${shiftData.unplanned_downtime_min} min`
   };
 
-  // Calculate average KPIs
-  const avgAvailability = companyData.reduce((sum, r) => sum + r.availability_ratio, 0) / companyData.length;
-  const avgPerformance = companyData.reduce((sum, r) => sum + r.performance_ratio, 0) / companyData.length;
-  const avgQuality = companyData.reduce((sum, r) => sum + r.quality_ratio, 0) / companyData.length;
-  const avgOee = avgAvailability * avgPerformance * avgQuality;
+  // KPIs from shift data
+  const avgAvailability = shiftData.availability_ratio;
+  const avgPerformance = shiftData.performance_ratio;
+  const avgQuality = shiftData.quality_ratio;
+  const avgOee = shiftData.oee_total;
 
   // Determine OEE band
   const getOeeBand = (oee: number, language: string) => {
@@ -65,20 +95,20 @@ export default function DemoSpada() {
     return "#D50000";
   };
 
-  // Prepare chart data
-  const chartData = companyData.map(record => ({
-    hour: format(parseISO(record.ts_hour), "HH:mm"),
-    fullTime: record.ts_hour,
-    oee: (record.oee_total * 100).toFixed(1),
-    availability: (record.availability_ratio * 100).toFixed(1),
-    performance: (record.performance_ratio * 100).toFixed(1),
-    quality: (record.quality_ratio * 100).toFixed(1),
-    color: getOeeBandColor(record.oee_total)
-  }));
+  // Prepare chart data - single shift point
+  const chartData = [{
+    hour: format(parseISO(shiftData.shift_started_at_tz), "HH:mm"),
+    fullTime: shiftData.shift_started_at_tz,
+    oee: (shiftData.oee_total * 100).toFixed(1),
+    availability: (shiftData.availability_ratio * 100).toFixed(1),
+    performance: (shiftData.performance_ratio * 100).toFixed(1),
+    quality: (shiftData.quality_ratio * 100).toFixed(1),
+    color: getOeeBandColor(shiftData.oee_total)
+  }];
 
   // Prepare table data
   const tableColumns = [
-    { header: t("hour"), accessor: (row: any) => format(parseISO(row.ts_hour), "HH:mm") },
+    { header: t("shift"), accessor: (row: any) => format(parseISO(row.shift_started_at_tz), "HH:mm") },
     { header: t("availability") + " (%)", accessor: (row: any) => (row.availability_ratio * 100).toFixed(1) },
     { header: t("performance") + " (%)", accessor: (row: any) => (row.performance_ratio * 100).toFixed(1) },
     { header: t("quality") + " (%)", accessor: (row: any) => (row.quality_ratio * 100).toFixed(1) },
@@ -87,6 +117,8 @@ export default function DemoSpada() {
     { header: t("units"), accessor: "total_units" as any },
     { header: t("defective"), accessor: "defective_units" as any }
   ];
+
+  const tableData = [{ ...shiftData, id: shiftData.id_record }];
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -231,38 +263,14 @@ export default function DemoSpada() {
       {/* Equipment Technical Data */}
       <EquipmentTechnicalData data={technicalData} />
 
-      {/* Chart Section */}
-      <Card className="p-6 bg-card border-border">
-        <CardHeader>
-          <CardTitle>{t("hourly_trend")}</CardTitle>
-          <p className="text-sm text-muted-foreground">{lineData.company_name} — {equipmentData.equipment_name}</p>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="hour" stroke="hsl(var(--muted-foreground))" style={{ fontSize: "12px" }} />
-              <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: "12px" }} domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: "14px" }} iconType="line" />
-              <ReferenceLine y={95} stroke="#00C853" strokeDasharray="3 3" label={t("excellence")} />
-              <ReferenceLine y={85} stroke="#64DD17" strokeDasharray="3 3" label={t("good")} />
-              <ReferenceLine y={75} stroke="#FFD600" strokeDasharray="3 3" label={t("acceptable")} />
-              <ReferenceLine y={65} stroke="#FF6D00" strokeDasharray="3 3" label={t("fair")} />
-              <Line type="monotone" dataKey="oee" stroke="#00C853" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
       {/* Data Table */}
       <Card className="p-6 bg-card border-border">
         <CardHeader>
-          <CardTitle>{t("hourly_records")}</CardTitle>
+          <CardTitle>{t("shift_summary")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable 
-            data={companyData} 
+            data={tableData} 
             columns={tableColumns} 
             emptyMessage={t("no_data")}
           />
