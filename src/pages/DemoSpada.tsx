@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KPICard } from "@/components/KPICard";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Activity, Gauge, CheckCircle, TrendingUp } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Activity, Gauge, CheckCircle, TrendingUp, Filter } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from "recharts";
 import { demoDataset } from "@/data/demoDataset";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { EquipmentTechnicalData } from "@/components/EquipmentTechnicalData";
 
 export default function DemoSpada() {
   const navigate = useNavigate();
@@ -19,6 +21,26 @@ export default function DemoSpada() {
   const lineData = demoDataset.dim_line[companyKey];
   const equipmentData = demoDataset.dim_equipment[companyKey];
   const shiftData = demoDataset.dim_shift[companyKey];
+
+  // Filter state with defaults
+  const [filters, setFilters] = useState({
+    line: "Línea de Ensamble Principal",
+    equipment: "Prensa Hidráulica PH-800",
+    shift: "Turno Mañana",
+    dateRange: "last_7_days"
+  });
+
+  // Equipment technical data
+  const technicalData = {
+    line: "Línea de Ensamble Principal",
+    equipment: "Prensa Hidráulica PH-800 (Torno Automático T.01)",
+    cycleTime: "0.296 min/pieza",
+    shiftDuration: "540 min",
+    theoreticalCapacityHour: "164.8 JPH",
+    theoreticalCapacityShift: "1317 JPSHIFT",
+    plannedDowntime: "60.5 min",
+    unplannedDowntime: "78.25 min"
+  };
 
   // Calculate average KPIs
   const avgAvailability = companyData.reduce((sum, r) => sum + r.availability_ratio, 0) / companyData.length;
@@ -100,33 +122,65 @@ export default function DemoSpada() {
         </Select>
       </div>
 
-      {/* Metadata Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">{t("line_label")}</p>
-            <p className="font-semibold">{lineData.line_name}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">{t("equipment_label")}</p>
-            <p className="font-semibold">{equipmentData.equipment_name}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">{t("cycle_time_label")}</p>
-            <p className="font-semibold">{equipmentData.design_cycle_time_min} min</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">{t("shift_label")}</p>
-            <p className="font-semibold">{shiftData.shift_name}</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Filters Card */}
+      <Card className="p-6 bg-card border-border">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">{t('filter_label')}</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <Label>{t('select_line_label')}</Label>
+            <Select value={filters.line} onValueChange={(value) => setFilters({...filters, line: value})}>
+              <SelectTrigger className="bg-card border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="Línea de Ensamble Principal">Línea de Ensamble Principal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('select_equipment_label')}</Label>
+            <Select value={filters.equipment} onValueChange={(value) => setFilters({...filters, equipment: value})}>
+              <SelectTrigger className="bg-card border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="Prensa Hidráulica PH-800">Prensa Hidráulica PH-800</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('select_shift_label')}</Label>
+            <Select value={filters.shift} onValueChange={(value) => setFilters({...filters, shift: value})}>
+              <SelectTrigger className="bg-card border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="Turno Mañana">Turno Mañana</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('select_range_label')}</Label>
+            <Select value={filters.dateRange} onValueChange={(value) => setFilters({...filters, dateRange: value})}>
+              <SelectTrigger className="bg-card border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border z-50">
+                <SelectItem value="last_7_days">{t('range_last_7_days')}</SelectItem>
+                <SelectItem value="last_14_days">{t('range_last_14_days')}</SelectItem>
+                <SelectItem value="last_30_days">{t('range_last_30_days')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </Card>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -173,6 +227,9 @@ export default function DemoSpada() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Equipment Technical Data */}
+      <EquipmentTechnicalData data={technicalData} />
 
       {/* Chart Section */}
       <Card className="p-6 bg-card border-border">
