@@ -2,10 +2,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/DataTable";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Plus, Pencil, Trash2, Link2, Clock } from "lucide-react";
 import { EquipmentDialog } from "./EquipmentDialog";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "@/contexts/LanguageContext";
+
+interface PlannedDowntime {
+  id: string;
+  category_code: string;
+  category_name: string;
+  duration_min: number;
+  unit_type: "absolute" | "per_cycle";
+}
 
 interface Equipment {
   id: string;
@@ -13,6 +22,9 @@ interface Equipment {
   equipment_name: string;
   design_cycle_time_min: number;
   active_flag: boolean;
+  planned_downtimes?: PlannedDowntime[];
+  assigned_line_id?: string;
+  assigned_line_name?: string;
 }
 
 interface EquipmentTabProps {
@@ -28,6 +40,12 @@ const mockEquipment: Equipment[] = [
     equipment_name: "CNC Machine #1", 
     design_cycle_time_min: 2.5, 
     active_flag: true,
+    assigned_line_id: "line-1",
+    assigned_line_name: "Production Line A",
+    planned_downtimes: [
+      { id: "1", category_code: "MAINT", category_name: "Maintenance", duration_min: 30, unit_type: "absolute" },
+      { id: "3", category_code: "BREAK", category_name: "Break", duration_min: 15, unit_type: "absolute" },
+    ],
   },
   { 
     id: "eq-2", 
@@ -35,6 +53,11 @@ const mockEquipment: Equipment[] = [
     equipment_name: "CNC Machine #2", 
     design_cycle_time_min: 3.0, 
     active_flag: true,
+    assigned_line_id: "line-1",
+    assigned_line_name: "Production Line A",
+    planned_downtimes: [
+      { id: "2", category_code: "SETUP", category_name: "Setup/Changeover", duration_min: 45, unit_type: "absolute" },
+    ],
   },
   { 
     id: "eq-3", 
@@ -42,6 +65,7 @@ const mockEquipment: Equipment[] = [
     equipment_name: "Robotic Arm #1", 
     design_cycle_time_min: 1.8, 
     active_flag: false,
+    planned_downtimes: [],
   },
 ];
 
@@ -172,10 +196,15 @@ export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTab
     },
   ];
 
+  const selectedEquipmentDetails = equipment.find((eq) => eq.id === selectedEquipment);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">{t("select_equipment")}</h2>
+        <div>
+          <h2 className="text-xl font-semibold">{t("equipment")}</h2>
+          <p className="text-sm text-muted-foreground">{t("equipment_management_subtitle")}</p>
+        </div>
         <Button
           onClick={() => {
             setEditingEquipment(null);
@@ -188,13 +217,104 @@ export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTab
         </Button>
       </div>
 
-      <DataTable
-        data={equipment}
-        columns={columns}
-        emptyMessage="No equipment configured. Add your first equipment to get started."
-        onRowClick={handleRowClick}
-        selectedRowId={selectedEquipment}
-      />
+      <Card className="p-4 bg-card border-border">
+        <DataTable
+          data={equipment}
+          columns={columns}
+          emptyMessage={t("no_equipment")}
+          onRowClick={handleRowClick}
+          selectedRowId={selectedEquipment}
+        />
+      </Card>
+
+      {selectedEquipmentDetails && (
+        <Card className="p-6 bg-card border-border">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">{t("equipment_details")}</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("equipment_code")}</p>
+                    <p className="font-mono font-medium">{selectedEquipmentDetails.equipment_code}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("equipment_name")}</p>
+                    <p className="font-medium">{selectedEquipmentDetails.equipment_name}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("cycle_time")}</p>
+                    <p className="font-medium">{selectedEquipmentDetails.design_cycle_time_min} min</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("status")}</p>
+                    <Badge variant={selectedEquipmentDetails.active_flag ? "default" : "secondary"}>
+                      {selectedEquipmentDetails.active_flag ? t("active") : t("inactive")}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                      <Link2 className="h-4 w-4" />
+                      {t("assigned_line")}
+                    </p>
+                    {selectedEquipmentDetails.assigned_line_id ? (
+                      <div className="bg-sidebar rounded-lg p-3 border border-border">
+                        <p className="font-medium">{selectedEquipmentDetails.assigned_line_name}</p>
+                        <p className="text-sm text-muted-foreground">ID: {selectedEquipmentDetails.assigned_line_id}</p>
+                      </div>
+                    ) : (
+                      <div className="bg-sidebar rounded-lg p-3 border border-border border-dashed">
+                        <p className="text-sm text-muted-foreground">{t("not_assigned_to_line")}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="h-5 w-5" />
+                <h4 className="text-base font-semibold">{t("planned_downtimes")}</h4>
+              </div>
+              
+              {selectedEquipmentDetails.planned_downtimes && selectedEquipmentDetails.planned_downtimes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {selectedEquipmentDetails.planned_downtimes.map((downtime) => (
+                    <div
+                      key={downtime.id}
+                      className="bg-sidebar rounded-lg p-4 border border-border"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="font-mono text-sm font-medium">{downtime.category_code}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {downtime.unit_type === "absolute" ? t("absolute") : t("per_cycle")}
+                        </Badge>
+                      </div>
+                      <p className="text-sm mb-2">{downtime.category_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {downtime.duration_min} min
+                        {downtime.unit_type === "per_cycle" && ` / ${t("cycle")}`}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-sidebar rounded-lg p-6 border border-border border-dashed text-center">
+                  <p className="text-sm text-muted-foreground">{t("no_planned_downtimes_assigned")}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
 
       <EquipmentDialog
         open={dialogOpen}
