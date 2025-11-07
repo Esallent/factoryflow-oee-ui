@@ -23,17 +23,9 @@ const formSchema = z.object({
   shift_started_at_tz: z.date({ required_error: "Start time is required" }),
   shift_ended_at_tz: z.date({ required_error: "End time is required" }),
   planned_time_min: z.number().min(0.1, "Planned time must be greater than 0"),
-  planned_downtime_min: z.number().min(0, "Cannot be negative"),
-  unplanned_downtime_min: z.number().min(0, "Cannot be negative"),
   cycle_time_min: z.number().min(0.1, "Cycle time must be at least 0.1"),
   total_units: z.number().int().min(0, "Cannot be negative"),
   defective_units: z.number().int().min(0, "Cannot be negative"),
-}).refine((data) => {
-  const totalDowntime = data.planned_downtime_min + data.unplanned_downtime_min;
-  return isLessOrEqual(totalDowntime, data.planned_time_min);
-}, {
-  message: "Total downtime cannot exceed planned time (±0.001 tolerance)",
-  path: ["unplanned_downtime_min"],
 }).refine((data) => isLessOrEqual(data.defective_units, data.total_units), {
   message: "Defective units cannot exceed total units",
   path: ["defective_units"],
@@ -81,8 +73,6 @@ export default function ProductionRecordForm() {
       id_equipment: "",
       id_shift: "",
       planned_time_min: 480,
-      planned_downtime_min: 0,
-      unplanned_downtime_min: 0,
       cycle_time_min: 1.0,
       total_units: 0,
       defective_units: 0,
@@ -112,8 +102,8 @@ export default function ProductionRecordForm() {
         // Mock calculation
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        const totalDowntime = formValues.planned_downtime_min + formValues.unplanned_downtime_min;
-        const runTime = formValues.planned_time_min - totalDowntime;
+        const totalUnplannedDowntime = unplannedDowntimes.reduce((sum, dt) => sum + dt.duration_min, 0);
+        const runTime = formValues.planned_time_min - totalUnplannedDowntime;
         const availability = runTime / formValues.planned_time_min;
         
         const idealCycleTime = formValues.cycle_time_min;
@@ -160,11 +150,10 @@ export default function ProductionRecordForm() {
     calculateOEE();
   }, [
     formValues.planned_time_min,
-    formValues.planned_downtime_min,
-    formValues.unplanned_downtime_min,
     formValues.cycle_time_min,
     formValues.total_units,
     formValues.defective_units,
+    unplannedDowntimes,
   ]);
 
   const onSubmit = async (data: FormValues) => {
@@ -429,59 +418,6 @@ export default function ProductionRecordForm() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="planned_downtime_min"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('planned_downtime')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          className="bg-sidebar border-border"
-                          {...field}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!isNaN(val) && val >= 0) {
-                              field.onChange(val);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="unplanned_downtime_min"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('unplanned_downtime')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          className="bg-sidebar border-border"
-                          {...field}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!isNaN(val) && val >= 0) {
-                              field.onChange(val);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField
