@@ -59,12 +59,25 @@ const mockShifts = [
   { id: "shift-3", name: "Night Shift (22:00-6:00)" },
 ];
 
+// Mock planned downtimes configured in equipment
+const mockEquipmentPlannedDowntimes = {
+  "eq-1": [
+    { category_code: "MAINT", duration_min: 30, unit_type: "shift" },
+    { category_code: "BREAK", duration_min: 15, unit_type: "shift" },
+  ],
+  "eq-2": [
+    { category_code: "MAINT", duration_min: 20, unit_type: "shift" },
+    { category_code: "BREAK", duration_min: 15, unit_type: "shift" },
+  ],
+};
+
 export default function ProductionRecordForm() {
   const { t } = useTranslation();
   const [oeeMetrics, setOeeMetrics] = useState<OEEMetrics | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [validationError, setValidationError] = useState<string>("");
   const [unplannedDowntimes, setUnplannedDowntimes] = useState<UnplannedDowntime[]>([]);
+  const [plannedDowntimeMin, setPlannedDowntimeMin] = useState(0);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -80,6 +93,17 @@ export default function ProductionRecordForm() {
   });
 
   const formValues = form.watch();
+
+  // Calculate planned downtime when equipment changes
+  useEffect(() => {
+    if (formValues.id_equipment) {
+      const equipmentDowntimes = mockEquipmentPlannedDowntimes[formValues.id_equipment as keyof typeof mockEquipmentPlannedDowntimes] || [];
+      const total = equipmentDowntimes.reduce((sum, dt) => sum + dt.duration_min, 0);
+      setPlannedDowntimeMin(total);
+    } else {
+      setPlannedDowntimeMin(0);
+    }
+  }, [formValues.id_equipment]);
 
   useEffect(() => {
     const calculateOEE = async () => {
@@ -103,7 +127,8 @@ export default function ProductionRecordForm() {
         await new Promise(resolve => setTimeout(resolve, 300));
         
         const totalUnplannedDowntime = unplannedDowntimes.reduce((sum, dt) => sum + dt.duration_min, 0);
-        const runTime = formValues.planned_time_min - totalUnplannedDowntime;
+        const totalDowntime = plannedDowntimeMin + totalUnplannedDowntime;
+        const runTime = formValues.planned_time_min - totalDowntime;
         const availability = runTime / formValues.planned_time_min;
         
         const idealCycleTime = formValues.cycle_time_min;
@@ -118,18 +143,21 @@ export default function ProductionRecordForm() {
         let band = "unacceptable";
         let band_color = "#e74c3c";
         
-        if (oee >= 0.85) {
-          band = "excellence";
+        if (oee >= 0.95) {
+          band = "world_class";
           band_color = "#27ae60";
+        } else if (oee >= 0.85) {
+          band = "excellent";
+          band_color = "#2ecc71";
         } else if (oee >= 0.75) {
           band = "good";
-          band_color = "#2ecc71";
-        } else if (oee >= 0.60) {
+          band_color = "#3498db";
+        } else if (oee >= 0.65) {
           band = "acceptable";
-          band_color = "#f1c40f";
-        } else if (oee >= 0.40) {
-          band = "fair";
           band_color = "#f39c12";
+        } else {
+          band = "unacceptable";
+          band_color = "#e74c3c";
         }
 
         setOeeMetrics({
@@ -154,6 +182,7 @@ export default function ProductionRecordForm() {
     formValues.total_units,
     formValues.defective_units,
     unplannedDowntimes,
+    plannedDowntimeMin,
   ]);
 
   const onSubmit = async (data: FormValues) => {
@@ -463,6 +492,28 @@ export default function ProductionRecordForm() {
                 />
               </div>
 
+              {/* Planned Downtime - Read Only */}
+              {formValues.id_equipment && (
+                <div className="p-4 bg-muted/50 rounded-lg border border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{t('planned_downtime')}</p>
+                      <p className="text-xs text-muted-foreground">{t('configured_in_equipment')}</p>
+                    </div>
+                    <p className="text-2xl font-bold">{plannedDowntimeMin} min</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Unplanned Downtimes Section - Inside Form */}
+              <div className="border-t border-border pt-4">
+                <UnplannedDowntimesSection
+                  downtimes={unplannedDowntimes}
+                  onChange={setUnplannedDowntimes}
+                  shiftDurationMin={formValues.planned_time_min}
+                />
+              </div>
+
               <div className="flex justify-end gap-3 pt-4">
                 <Button
                   type="button"
@@ -497,13 +548,6 @@ export default function ProductionRecordForm() {
           </Card>
         </div>
       </div>
-
-      {/* Unplanned Downtimes Section - Full Width Below */}
-      <UnplannedDowntimesSection
-        downtimes={unplannedDowntimes}
-        onChange={setUnplannedDowntimes}
-        shiftDurationMin={formValues.planned_time_min}
-      />
     </div>
   );
 }

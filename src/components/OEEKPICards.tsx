@@ -139,11 +139,11 @@ export function OEEKPICards({ metrics }: OEEKPICardsProps) {
         <p className="text-xs font-semibold text-muted-foreground mb-3">OEE Performance Bands</p>
         <div className="space-y-2">
           {[
-            { label: "Excellence", color: "#27ae60", range: "≥ 85%" },
-            { label: "Good", color: "#2ecc71", range: "75-84%" },
-            { label: "Acceptable", color: "#f1c40f", range: "60-74%" },
-            { label: "Fair", color: "#f39c12", range: "40-59%" },
-            { label: "Unacceptable", color: "#e74c3c", range: "< 40%" },
+            { label: "World Class", color: "#27ae60", range: "≥ 95%" },
+            { label: "Excellent", color: "#2ecc71", range: "≥ 85% < 95%" },
+            { label: "Good", color: "#3498db", range: "≥ 75% < 85%" },
+            { label: "Acceptable", color: "#f39c12", range: "≥ 65% < 75%" },
+            { label: "Unacceptable", color: "#e74c3c", range: "< 65%" },
           ].map((band) => (
             <div key={band.label} className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
