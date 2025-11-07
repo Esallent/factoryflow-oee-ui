@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { EquipmentDialog } from "./EquipmentDialog";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface Equipment {
   id: string;
@@ -12,6 +13,7 @@ interface Equipment {
   equipment_name: string;
   design_cycle_time_min: number;
   active_flag: boolean;
+  associated_template_ids?: string[];
 }
 
 interface EquipmentTabProps {
@@ -19,32 +21,43 @@ interface EquipmentTabProps {
   onEquipmentSelect?: (equipmentId: string) => void;
 }
 
-// Mock data - replace with API call
+// Mock data - replace with actual API calls
 const mockEquipment: Equipment[] = [
-  {
-    id: "1",
-    equipment_code: "CNC-001",
-    equipment_name: "CNC Machine #1",
-    design_cycle_time_min: 2.5,
+  { 
+    id: "eq-1", 
+    equipment_code: "CNC-001", 
+    equipment_name: "CNC Machine #1", 
+    design_cycle_time_min: 2.5, 
     active_flag: true,
+    associated_template_ids: ["dt-1", "dt-2"],
   },
-  {
-    id: "2",
-    equipment_code: "CNC-002",
-    equipment_name: "CNC Machine #2",
-    design_cycle_time_min: 2.3,
+  { 
+    id: "eq-2", 
+    equipment_code: "CNC-002", 
+    equipment_name: "CNC Machine #2", 
+    design_cycle_time_min: 3.0, 
     active_flag: true,
+    associated_template_ids: ["dt-1"],
   },
-  {
-    id: "3",
-    equipment_code: "ARM-001",
-    equipment_name: "Robotic Arm #1",
-    design_cycle_time_min: 1.8,
+  { 
+    id: "eq-3", 
+    equipment_code: "RBT-001", 
+    equipment_name: "Robotic Arm #1", 
+    design_cycle_time_min: 1.8, 
     active_flag: false,
+    associated_template_ids: [],
   },
 ];
 
+// Mock templates - replace with actual API call
+const mockTemplates = [
+  { id: "dt-1", name: "Lunch Break" },
+  { id: "dt-2", name: "Tool Change" },
+  { id: "dt-3", name: "Maintenance Check" },
+];
+
 export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTabProps) {
+  const { t } = useTranslation();
   const [equipment, setEquipment] = useState<Equipment[]>(mockEquipment);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
@@ -55,11 +68,6 @@ export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTab
     onEquipmentSelect?.(eq.id);
   };
 
-  const handleAdd = () => {
-    setEditingEquipment(null);
-    setDialogOpen(true);
-  };
-
   const handleEdit = (eq: Equipment) => {
     setEditingEquipment(eq);
     setDialogOpen(true);
@@ -67,102 +75,138 @@ export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTab
 
   const handleDelete = async (id: string) => {
     try {
-      // await fetch(`/api/v1/equipment/${id}`, { method: 'DELETE' });
+      // DELETE /api/v1/equipment/{id}
       setEquipment(equipment.filter((eq) => eq.id !== id));
+      
       toast({
-        title: "Success",
-        description: "Equipment deleted successfully",
+        title: t("success"),
+        description: t("delete"),
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error_occurred"),
         description: "Failed to delete equipment",
       });
     }
   };
 
-  const handleSave = (data: Omit<Equipment, "id">) => {
-    if (editingEquipment) {
-      // Update existing
-      setEquipment(
-        equipment.map((eq) =>
-          eq.id === editingEquipment.id ? { ...data, id: eq.id } : eq
-        )
-      );
+  const handleSave = async (data: Omit<Equipment, "id">) => {
+    try {
+      if (editingEquipment) {
+        // PUT /api/v1/equipment/{id}
+        setEquipment(
+          equipment.map((eq) =>
+            eq.id === editingEquipment.id ? { ...data, id: eq.id } : eq
+          )
+        );
+      } else {
+        // POST /api/v1/equipment
+        const newEquipment = {
+          ...data,
+          id: `eq-${Date.now()}`,
+        };
+        setEquipment([...equipment, newEquipment]);
+      }
+
       toast({
-        title: "Success",
-        description: "Equipment updated successfully",
+        title: t("success"),
+        description: editingEquipment ? t("edit") : t("add"),
       });
-    } else {
-      // Add new
-      setEquipment([...equipment, { ...data, id: Date.now().toString() }]);
+
+      setDialogOpen(false);
+      setEditingEquipment(null);
+    } catch (error) {
       toast({
-        title: "Success",
-        description: "Equipment added successfully",
+        variant: "destructive",
+        title: t("error_occurred"),
+        description: "Failed to save equipment",
       });
     }
-    setDialogOpen(false);
   };
 
   const columns = [
     {
-      header: "Equipment Code",
-      accessor: "equipment_code" as keyof Equipment,
+      header: "Code",
+      accessor: (eq: Equipment) => (
+        <span className="font-mono text-sm">{eq.equipment_code}</span>
+      ),
     },
     {
       header: "Equipment Name",
-      accessor: "equipment_name" as keyof Equipment,
+      accessor: (eq: Equipment) => (
+        <span className="font-medium">{eq.equipment_name}</span>
+      ),
     },
     {
-      header: "Design Cycle Time (min)",
-      accessor: "design_cycle_time_min" as keyof Equipment,
+      header: "Cycle Time",
+      accessor: (eq: Equipment) => (
+        <span className="text-sm">{eq.design_cycle_time_min} min</span>
+      ),
+    },
+    {
+      header: t("downtime_templates"),
+      accessor: (eq: Equipment) => {
+        const count = eq.associated_template_ids?.length || 0;
+        return (
+          <Badge variant={count > 0 ? "default" : "secondary"} className="text-xs">
+            {count} {count === 1 ? t("template_singular") : t("template_plural")}
+          </Badge>
+        );
+      },
     },
     {
       header: "Status",
-      accessor: ((row: Equipment) => (
-        <Badge className={row.active_flag ? "bg-status-good" : "bg-status-offline"}>
-          {row.active_flag ? "Active" : "Inactive"}
+      accessor: (eq: Equipment) => (
+        <Badge variant={eq.active_flag ? "default" : "secondary"}>
+          {eq.active_flag ? t("active") : t("inactive")}
         </Badge>
-      )) as any,
+      ),
     },
     {
-      header: "Actions",
-      accessor: ((row: Equipment) => (
-        <div className="flex gap-2">
+      header: "",
+      accessor: (eq: Equipment) => (
+        <div className="flex gap-2 justify-end">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={() => handleEdit(row)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(eq);
+            }}
+            className="hover:bg-primary/10"
           >
-            <Pencil className="h-3 w-3" />
+            <Pencil className="h-4 w-4" />
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(eq.id);
+            }}
+            className="hover:bg-destructive/10 hover:text-destructive"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-      )) as any,
+      ),
     },
   ];
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold">Equipment Management</h2>
-          <p className="text-sm text-muted-foreground">
-            {selectedLineId
-              ? `Managing equipment for line: ${selectedLineId}`
-              : "Select a line from the General tab to manage its equipment"}
-          </p>
-        </div>
-        <Button onClick={handleAdd} className="gap-2">
+        <h2 className="text-xl font-semibold">{t("select_equipment")}</h2>
+        <Button
+          onClick={() => {
+            setEditingEquipment(null);
+            setDialogOpen(true);
+          }}
+          className="gap-2"
+        >
           <Plus className="h-4 w-4" />
-          Add Equipment
+          {t("add_equipment")}
         </Button>
       </div>
 
@@ -179,6 +223,7 @@ export function EquipmentTab({ selectedLineId, onEquipmentSelect }: EquipmentTab
         onOpenChange={setDialogOpen}
         equipment={editingEquipment}
         onSave={handleSave}
+        availableTemplates={mockTemplates}
       />
     </div>
   );

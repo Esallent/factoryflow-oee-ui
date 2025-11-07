@@ -127,6 +127,9 @@ export const translations = {
   equipment_plural: "equipment",
   no_equipment_available: "No equipment available",
   equipment_selected: "equipment selected",
+  associated_templates: "Associated Templates",
+  template_singular: "template",
+  template_plural: "templates",
   
     all_lines: "All Lines",
     all_equipment: "All Equipment",
@@ -337,7 +340,10 @@ export const translations = {
   equipment_singular: "equipo",
   equipment_plural: "equipos",
   no_equipment_available: "No hay equipos disponibles",
-  equipment_selected: "equipos seleccionados",
+  equipment_selected: "seleccionados",
+  associated_templates: "Plantillas asociadas",
+  template_singular: "plantilla",
+  template_plural: "plantillas",
   
     all_lines: "Todas las líneas",
     all_equipment: "Todos los equipos",
