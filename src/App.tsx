@@ -24,12 +24,12 @@ const App = () => {
         <Sonner />
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Layout><OeeDashboard /></Layout>} />
-          <Route path="/dashboard-v2" element={<Layout><OeeDashboardV2 /></Layout>} />
-          <Route path="/record" element={<Layout><ProductionRecordForm /></Layout>} />
-          <Route path="/record-v2" element={<Layout><ProductionRecordFormV2 /></Layout>} />
-          <Route path="/history" element={<Layout><HistoryPage /></Layout>} />
-          <Route path="/history-v2" element={<Layout><HistoryPageV2 /></Layout>} />
+          <Route path="/dashboard" element={<Layout><OeeDashboardV2 /></Layout>} />
+          <Route path="/dashboard-v1" element={<Layout><OeeDashboard /></Layout>} />
+          <Route path="/record" element={<Layout><ProductionRecordFormV2 /></Layout>} />
+          <Route path="/record-v1" element={<Layout><ProductionRecordForm /></Layout>} />
+          <Route path="/history" element={<Layout><HistoryPageV2 /></Layout>} />
+          <Route path="/history-v1" element={<Layout><HistoryPage /></Layout>} />
           <Route path="/integrations" element={<Layout><IntegrationsPanel /></Layout>} />
           <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
           <Route path="/demo/schaeffler" element={<Layout><DemoSchaeffler /></Layout>} />
