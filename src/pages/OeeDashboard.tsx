@@ -172,12 +172,12 @@ export default function OeeDashboard() {
       <Card className="p-6 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">{t('filter')}</h2>
+          <h2 className="text-lg font-semibold">{t('filter_label')}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Label>{t('select_line')}</Label>
+            <Label>{t('select_line_label')}</Label>
             <Select
               value={filters.id_line}
               onValueChange={(value) => updateFilter("id_line", value)}
@@ -196,7 +196,7 @@ export default function OeeDashboard() {
           </div>
 
           <div className="space-y-2">
-            <Label>{t('select_equipment')}</Label>
+            <Label>{t('select_equipment_label')}</Label>
             <Select
               value={filters.id_equipment}
               onValueChange={(value) => updateFilter("id_equipment", value)}
@@ -215,7 +215,7 @@ export default function OeeDashboard() {
           </div>
 
           <div className="space-y-2">
-            <Label>{t('select_shift')}</Label>
+            <Label>{t('select_shift_label')}</Label>
             <Select
               value={filters.id_shift}
               onValueChange={(value) => updateFilter("id_shift", value)}
@@ -234,7 +234,7 @@ export default function OeeDashboard() {
           </div>
 
           <div className="space-y-2">
-            <Label>{t('select_range')}</Label>
+            <Label>{t('select_range_label')}</Label>
             <Select
               value={filters.range_type}
               onValueChange={(value) => {

@@ -69,6 +69,31 @@ export const translations = {
   range_this_quarter: "This quarter",
   range_this_year: "This year",
   range_all_time: "All time",
+  
+  // KPI labels
+  availability_label: "Availability",
+  performance_label: "Performance",
+  quality_label: "Quality",
+  overall_oee_label: "Overall OEE",
+  total_units_produced: "Total Units Produced",
+  expected_units_label: "Expected Units",
+  total_defective_units_label: "Total Defective Units",
+  completion: "completion",
+  defect_rate: "defect rate",
+  
+  // Filter labels
+  select_line_label: "Select Line",
+  select_equipment_label: "Select Equipment",
+  select_shift_label: "Select Shift",
+  select_range_label: "Select Range",
+  all_shifts_label: "All Shifts",
+  filter_label: "Filter",
+  
+  // Empty states and messages
+  no_data_selected_filters: "No data available for the selected filters",
+  no_trend_data: "No trend data available",
+  no_data_period: "No data available for the selected period",
+  
     all_lines: "All Lines",
     all_equipment: "All Equipment",
     days_7: "Last 7 Days",
@@ -221,6 +246,31 @@ export const translations = {
   range_this_quarter: "Este trimestre",
   range_this_year: "Año actual",
   range_all_time: "Todo el histórico",
+  
+  // KPI labels
+  availability_label: "Disponibilidad",
+  performance_label: "Rendimiento",
+  quality_label: "Calidad",
+  overall_oee_label: "OEE General",
+  total_units_produced: "Total de unidades producidas",
+  expected_units_label: "Unidades esperadas",
+  total_defective_units_label: "Total de unidades defectuosas",
+  completion: "cumplimiento",
+  defect_rate: "tasa de defectos",
+  
+  // Filter labels
+  select_line_label: "Seleccionar línea",
+  select_equipment_label: "Seleccionar equipo",
+  select_shift_label: "Seleccionar turno",
+  select_range_label: "Seleccionar rango",
+  all_shifts_label: "Todos los turnos",
+  filter_label: "Filtros",
+  
+  // Empty states and messages
+  no_data_selected_filters: "No hay datos disponibles para los filtros seleccionados",
+  no_trend_data: "No hay datos de tendencia disponibles",
+  no_data_period: "Sin datos disponibles para el período seleccionado",
+  
     all_lines: "Todas las líneas",
     all_equipment: "Todos los equipos",
     days_7: "Últimos 7 Días",

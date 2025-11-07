@@ -2,6 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Activity, TrendingUp, CheckCircle2, Target, Package, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface DailyOeeData {
   calendar_date: string;
@@ -31,15 +32,17 @@ const getOeeBandColor = (oee: number): string => {
   return "#e74c3c"; // Unacceptable
 };
 
-const getOeeBandText = (oee: number): string => {
-  if (oee >= 0.85) return "Excellence";
-  if (oee >= 0.75) return "Good";
-  if (oee >= 0.60) return "Acceptable";
-  if (oee >= 0.40) return "Fair";
-  return "Unacceptable";
+const getOeeBandText = (oee: number, t: (key: string) => string): string => {
+  if (oee >= 0.85) return t("excellence");
+  if (oee >= 0.75) return t("good");
+  if (oee >= 0.60) return t("acceptable");
+  if (oee >= 0.40) return t("fair");
+  return t("unacceptable");
 };
 
 export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEnabled = false }: OeeDashboardKPIsProps) {
+  const { t } = useTranslation();
+  
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -55,7 +58,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
   if (data.length === 0) {
     return (
       <Card className="p-8 text-center bg-card border-border">
-        <p className="text-muted-foreground">No data available for the selected filters</p>
+        <p className="text-muted-foreground">{t("no_data_selected_filters")}</p>
       </Card>
     );
   }
@@ -118,11 +121,11 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
   };
 
   const oeeBandColor = getOeeBandColor(avgOee / 100);
-  const oeeBandText = getOeeBandText(avgOee / 100);
+  const oeeBandText = getOeeBandText(avgOee / 100, t);
 
   const kpiData = [
     {
-      label: "Availability",
+      label: t("availability_label"),
       value: avgAvailability.toFixed(1) + "%",
       prevValue: compareEnabled ? prevAvgAvailability.toFixed(1) + "%" : null,
       delta: compareEnabled ? calculateDelta(avgAvailability, prevAvgAvailability) : null,
@@ -132,7 +135,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
       borderColor: "border-blue-500/30",
     },
     {
-      label: "Performance",
+      label: t("performance_label"),
       value: avgPerformance.toFixed(1) + "%",
       prevValue: compareEnabled ? prevAvgPerformance.toFixed(1) + "%" : null,
       delta: compareEnabled ? calculateDelta(avgPerformance, prevAvgPerformance) : null,
@@ -142,7 +145,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
       borderColor: "border-purple-500/30",
     },
     {
-      label: "Quality",
+      label: t("quality_label"),
       value: avgQuality.toFixed(1) + "%",
       prevValue: compareEnabled ? prevAvgQuality.toFixed(1) + "%" : null,
       delta: compareEnabled ? calculateDelta(avgQuality, prevAvgQuality) : null,
@@ -152,7 +155,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
       borderColor: "border-green-500/30",
     },
     {
-      label: "Overall OEE",
+      label: t("overall_oee_label"),
       value: avgOee.toFixed(1) + "%",
       prevValue: compareEnabled ? prevAvgOee.toFixed(1) + "%" : null,
       delta: compareEnabled ? calculateDelta(avgOee, prevAvgOee) : null,
@@ -228,7 +231,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
               <Package className="h-5 w-5 text-blue-400" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Total Units Produced</p>
+              <p className="text-sm text-muted-foreground">{t("total_units_produced")}</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold">{totalUnits.toLocaleString()}</p>
                 {compareEnabled && prevTotalUnits > 0 && (
@@ -250,7 +253,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
               <Target className="h-5 w-5 text-gray-400" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Expected Units</p>
+              <p className="text-sm text-muted-foreground">{t("expected_units_label")}</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold">{totalExpected.toLocaleString()}</p>
                 {compareEnabled && prevTotalExpected > 0 && (
@@ -259,7 +262,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
               </div>
               {totalExpected > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  {((totalUnits / totalExpected) * 100).toFixed(1)}% completion
+                  {((totalUnits / totalExpected) * 100).toFixed(1)}% {t("completion")}
                 </p>
               )}
             </div>
@@ -272,7 +275,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
               <AlertTriangle className="h-5 w-5 text-red-400" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Total Defective Units</p>
+              <p className="text-sm text-muted-foreground">{t("total_defective_units_label")}</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold">{totalDefective.toLocaleString()}</p>
                 {compareEnabled && prevTotalDefective > 0 && (
@@ -280,7 +283,7 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {((totalDefective / totalUnits) * 100).toFixed(2)}% defect rate
+                {((totalDefective / totalUnits) * 100).toFixed(2)}% {t("defect_rate")}
               </p>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO } from "date-fns";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface DailyOeeData {
   calendar_date: string;
@@ -23,6 +24,8 @@ interface OeeTrendChartProps {
 }
 
 export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabled = false }: OeeTrendChartProps) {
+  const { t } = useTranslation();
+  
   if (isLoading) {
     return (
       <Card className="p-6 bg-card border-border">
@@ -34,7 +37,7 @@ export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabl
   if (data.length === 0) {
     return (
       <Card className="p-8 text-center bg-card border-border">
-        <p className="text-muted-foreground">No trend data available</p>
+        <p className="text-muted-foreground">{t("no_trend_data")}</p>
       </Card>
     );
   }
@@ -84,9 +87,9 @@ export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabl
   return (
     <Card className="p-6 bg-card border-border">
       <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-1">OEE Trend Analysis</h2>
+        <h2 className="text-xl font-semibold mb-1">{t("oee_trend_analysis")}</h2>
         <p className="text-sm text-muted-foreground">
-          Daily performance metrics over the selected period
+          {t("daily_metrics_subtitle")}
         </p>
       </div>
 
@@ -188,22 +191,22 @@ export function OeeTrendChart({ data, previousData = [], isLoading, compareEnabl
 
       {/* Band Reference */}
       <div className="mt-6 pt-4 border-t border-border">
-        <p className="text-xs font-semibold text-muted-foreground mb-2">OEE Performance Bands</p>
+        <p className="text-xs font-semibold text-muted-foreground mb-2">{t("oee_bands")}</p>
         <div className="flex flex-wrap gap-4">
           {[
-            { label: "Excellence", color: "#27ae60", range: "≥85%" },
-            { label: "Good", color: "#2ecc71", range: "75-84%" },
-            { label: "Acceptable", color: "#f1c40f", range: "60-74%" },
-            { label: "Fair", color: "#f39c12", range: "40-59%" },
-            { label: "Unacceptable", color: "#e74c3c", range: "<40%" },
+            { labelKey: "excellence" as const, color: "#27ae60", range: "≥85%" },
+            { labelKey: "good" as const, color: "#2ecc71", range: "75-84%" },
+            { labelKey: "acceptable" as const, color: "#f1c40f", range: "60-74%" },
+            { labelKey: "fair" as const, color: "#f39c12", range: "40-59%" },
+            { labelKey: "unacceptable" as const, color: "#e74c3c", range: "<40%" },
           ].map((band) => (
-            <div key={band.label} className="flex items-center gap-2">
+            <div key={band.labelKey} className="flex items-center gap-2">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: band.color }}
               />
               <span className="text-xs text-muted-foreground">
-                {band.label} ({band.range})
+                {t(band.labelKey)} ({band.range})
               </span>
             </div>
           ))}
