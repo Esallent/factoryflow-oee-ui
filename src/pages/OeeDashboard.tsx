@@ -49,6 +49,7 @@ interface Filters {
   id_shift: string;
   range: number;
   compare_enabled: boolean;
+  range_type: string; // Future-proof for v2: "last_7_days", "custom", etc.
 }
 
 export default function OeeDashboard() {
@@ -60,10 +61,12 @@ export default function OeeDashboard() {
     id_shift: "all-shifts",
     range: 7,
     compare_enabled: false,
+    range_type: "last_7_days", // Future-proof for v2
   });
   const [dailyData, setDailyData] = useState<DailyOeeData[]>([]);
   const [previousData, setPreviousData] = useState<DailyOeeData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [noDataWarning, setNoDataWarning] = useState<string | null>(null);
 
   const updateFilter = (key: keyof Filters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -71,6 +74,7 @@ export default function OeeDashboard() {
 
   const fetchOeeData = async () => {
     setIsLoading(true);
+    setNoDataWarning(null);
     
     try {
       // Build query params
@@ -79,6 +83,7 @@ export default function OeeDashboard() {
       if (filters.id_equipment !== "all-equipment") params.append("id_equipment", filters.id_equipment);
       if (filters.id_shift !== "all-shifts") params.append("id_shift", filters.id_shift);
       params.append("days", filters.range.toString());
+      params.append("range_type", filters.range_type);
 
       // Call GET /api/v1/reports/oee-daily.csv
       // const response = await fetch(`/api/v1/reports/oee-daily.csv?${params.toString()}`);
@@ -89,6 +94,15 @@ export default function OeeDashboard() {
       
       // Mock CSV data
       const mockCsvData = generateMockDailyData(filters.range);
+      
+      // Handle empty data or warning response
+      if (mockCsvData.length === 0) {
+        setNoDataWarning("Sin datos disponibles para el período seleccionado.");
+        setDailyData([]);
+        setPreviousData([]);
+        return;
+      }
+      
       setDailyData(mockCsvData);
 
       // Fetch comparison data if enabled
@@ -250,21 +264,35 @@ export default function OeeDashboard() {
         </div>
       </Card>
 
+      {/* No Data Warning Banner */}
+      {noDataWarning && (
+        <Card className="p-6 bg-yellow-500/10 border-yellow-500/30">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🗨️</span>
+            <p className="text-foreground font-medium">{noDataWarning}</p>
+          </div>
+        </Card>
+      )}
+
       {/* KPI Cards */}
-      <OeeDashboardKPIs 
-        data={dailyData} 
-        previousData={previousData}
-        isLoading={isLoading}
-        compareEnabled={filters.compare_enabled}
-      />
+      {!noDataWarning && (
+        <OeeDashboardKPIs 
+          data={dailyData} 
+          previousData={previousData}
+          isLoading={isLoading}
+          compareEnabled={filters.compare_enabled}
+        />
+      )}
 
       {/* Trend Chart */}
-      <OeeTrendChart 
-        data={dailyData} 
-        previousData={previousData}
-        isLoading={isLoading}
-        compareEnabled={filters.compare_enabled}
-      />
+      {!noDataWarning && (
+        <OeeTrendChart 
+          data={dailyData} 
+          previousData={previousData}
+          isLoading={isLoading}
+          compareEnabled={filters.compare_enabled}
+        />
+      )}
 
       {/* Demo Pages Section */}
       <Card className="p-6 bg-card border-border">

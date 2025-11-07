@@ -81,21 +81,13 @@ export default function HistoryPage() {
       throw new Error("404"); // Simulate endpoint not available
       
     } catch (error: any) {
-      const status = error.message;
+      console.error("CSV export failed:", error);
       
-      if (status === "404" || status === "500" || error.status === 404 || error.status === 500) {
-        toast({
-          title: "Export Not Available",
-          description: "Export CSV not available in this version.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Export Failed",
-          description: "Failed to export CSV. Please try again.",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: t('export_error_title'),
+        description: t('export_error_description'),
+      });
     } finally {
       setIsExporting(false);
     }
