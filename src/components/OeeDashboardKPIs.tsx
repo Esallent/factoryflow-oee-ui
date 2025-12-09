@@ -63,53 +63,66 @@ export function OeeDashboardKPIs({ data, previousData = [], isLoading, compareEn
     );
   }
 
-  // Calculate averages across all days
+  // Calculate weighted OEE: OEE_ponderado = Σ(OEE × TO) / Σ(TO)
+  // TO (Tiempo Operativo) = TF × Availability
   const totals = data.reduce(
-    (acc, day) => ({
-      availability: acc.availability + day.availability_avg,
-      performance: acc.performance + day.performance_avg,
-      quality: acc.quality + day.quality_avg,
-      oee: acc.oee + day.oee_avg,
-      units: acc.units + day.total_units_sum,
-      defective: acc.defective + day.defective_units_sum,
-      expected: acc.expected + (day.expected_units || 0),
-    }),
-    { availability: 0, performance: 0, quality: 0, oee: 0, units: 0, defective: 0, expected: 0 }
+    (acc, day) => {
+      const tf = day.available_time_min || 480; // Default 8h shift
+      const to = tf * day.availability_avg; // Tiempo Operativo
+      
+      return {
+        availability_weighted: acc.availability_weighted + (day.availability_avg * tf),
+        performance_weighted: acc.performance_weighted + (day.performance_avg * to),
+        quality_weighted: acc.quality_weighted + (day.quality_avg * to),
+        oee_weighted: acc.oee_weighted + (day.oee_avg * to),
+        total_tf: acc.total_tf + tf,
+        total_to: acc.total_to + to,
+        units: acc.units + day.total_units_sum,
+        defective: acc.defective + day.defective_units_sum,
+        expected: acc.expected + (day.expected_units || 0),
+      };
+    },
+    { availability_weighted: 0, performance_weighted: 0, quality_weighted: 0, oee_weighted: 0, total_tf: 0, total_to: 0, units: 0, defective: 0, expected: 0 }
   );
 
-  const count = data.length;
-  const avgAvailability = (totals.availability / count) * 100;
-  const avgPerformance = (totals.performance / count) * 100;
-  const avgQuality = (totals.quality / count) * 100;
-  const avgOee = (totals.oee / count) * 100;
+  // Weighted averages: metric = Σ(metric × TO) / Σ(TO)
+  const avgAvailability = totals.total_tf > 0 ? (totals.availability_weighted / totals.total_tf) * 100 : 0;
+  const avgPerformance = totals.total_to > 0 ? (totals.performance_weighted / totals.total_to) * 100 : 0;
+  const avgQuality = totals.total_to > 0 ? (totals.quality_weighted / totals.total_to) * 100 : 0;
+  const avgOee = totals.total_to > 0 ? (totals.oee_weighted / totals.total_to) * 100 : 0;
   const totalUnits = totals.units;
   const totalDefective = totals.defective;
   const totalExpected = totals.expected;
 
-  // Calculate previous period metrics if comparison enabled
-  let prevTotals = { availability: 0, performance: 0, quality: 0, oee: 0, units: 0, defective: 0, expected: 0 };
+  // Calculate previous period metrics if comparison enabled (also weighted)
   let prevAvgAvailability = 0, prevAvgPerformance = 0, prevAvgQuality = 0, prevAvgOee = 0;
   let prevTotalUnits = 0, prevTotalDefective = 0, prevTotalExpected = 0;
 
   if (compareEnabled && previousData.length > 0) {
-    prevTotals = previousData.reduce(
-      (acc, day) => ({
-        availability: acc.availability + day.availability_avg,
-        performance: acc.performance + day.performance_avg,
-        quality: acc.quality + day.quality_avg,
-        oee: acc.oee + day.oee_avg,
-        units: acc.units + day.total_units_sum,
-        defective: acc.defective + day.defective_units_sum,
-        expected: acc.expected + (day.expected_units || 0),
-      }),
-      { availability: 0, performance: 0, quality: 0, oee: 0, units: 0, defective: 0, expected: 0 }
+    const prevTotals = previousData.reduce(
+      (acc, day) => {
+        const tf = day.available_time_min || 480;
+        const to = tf * day.availability_avg;
+        
+        return {
+          availability_weighted: acc.availability_weighted + (day.availability_avg * tf),
+          performance_weighted: acc.performance_weighted + (day.performance_avg * to),
+          quality_weighted: acc.quality_weighted + (day.quality_avg * to),
+          oee_weighted: acc.oee_weighted + (day.oee_avg * to),
+          total_tf: acc.total_tf + tf,
+          total_to: acc.total_to + to,
+          units: acc.units + day.total_units_sum,
+          defective: acc.defective + day.defective_units_sum,
+          expected: acc.expected + (day.expected_units || 0),
+        };
+      },
+      { availability_weighted: 0, performance_weighted: 0, quality_weighted: 0, oee_weighted: 0, total_tf: 0, total_to: 0, units: 0, defective: 0, expected: 0 }
     );
 
-    const prevCount = previousData.length;
-    prevAvgAvailability = (prevTotals.availability / prevCount) * 100;
-    prevAvgPerformance = (prevTotals.performance / prevCount) * 100;
-    prevAvgQuality = (prevTotals.quality / prevCount) * 100;
-    prevAvgOee = (prevTotals.oee / prevCount) * 100;
+    prevAvgAvailability = prevTotals.total_tf > 0 ? (prevTotals.availability_weighted / prevTotals.total_tf) * 100 : 0;
+    prevAvgPerformance = prevTotals.total_to > 0 ? (prevTotals.performance_weighted / prevTotals.total_to) * 100 : 0;
+    prevAvgQuality = prevTotals.total_to > 0 ? (prevTotals.quality_weighted / prevTotals.total_to) * 100 : 0;
+    prevAvgOee = prevTotals.total_to > 0 ? (prevTotals.oee_weighted / prevTotals.total_to) * 100 : 0;
     prevTotalUnits = prevTotals.units;
     prevTotalDefective = prevTotals.defective;
     prevTotalExpected = prevTotals.expected;
