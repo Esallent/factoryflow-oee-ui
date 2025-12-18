@@ -13,6 +13,7 @@ import OeeDashboardV2 from "./pages/OeeDashboardV2";
 import HistoryPageV2 from "./pages/HistoryPageV2";
 import IntegrationsPanel from "./pages/IntegrationsPanel";
 import EquipmentDetailPage from "./pages/EquipmentDetailPage";
+import OeeSimulator from "./pages/OeeSimulator";
 import DemoSchaeffler from "./pages/DemoSchaeffler";
 import DemoSpada from "./pages/DemoSpada";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => {
           <Route path="/integrations" element={<Layout><IntegrationsPanel /></Layout>} />
           <Route path="/lines" element={<Layout><LinesPage /></Layout>} />
           <Route path="/equipment-detail" element={<Layout><EquipmentDetailPage /></Layout>} />
+          <Route path="/simulator" element={<OeeSimulator />} />
           <Route path="/demo/schaeffler" element={<Layout><DemoSchaeffler /></Layout>} />
           <Route path="/demo/spada" element={<Layout><DemoSpada /></Layout>} />
           <Route path="*" element={<NotFound />} />
