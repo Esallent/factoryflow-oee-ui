@@ -23,13 +23,15 @@ The API key is managed as a Lovable secret:
 3. Enter your FactoryOS API key
 
 The SDK automatically uses this key for all requests via:
+
 ```typescript
 import.meta.env.VITE_API_KEY
 ```
 
 ### Backend URL
 
-Base URL: `https://factory-os-backend.replit.app`
+//Base URL: `https://factory-os-backend.replit.app`
+Base URL: `https://85563b9aa0ff.ngrok-free.app`
 
 ## API Client SDK
 
@@ -38,6 +40,7 @@ The SDK is auto-generated from the backend and provides typed functions for all 
 ### Updating the SDK
 
 **Manual update:**
+
 ```bash
 sh scripts/update-api-client.sh
 ```
@@ -48,6 +51,7 @@ The SDK is automatically updated on every build via the `prebuild` script in `pa
 ### Available Functions
 
 The SDK provides functions for:
+
 - `getHealth()` - Health check
 - `calculateOEE()` - OEE calculation (v1)
 - `calculateOEEv2()` - OEE calculation (v2)
@@ -61,44 +65,53 @@ The SDK provides functions for:
 ### OEE Data Hooks (`src/hooks/useOeeData.ts`)
 
 **`useOeeDailyData(filters)`**
+
 - Fetches daily OEE data for dashboards and charts
 - Parameters: line, equipment, shift, date range
 - Returns: Array of `DailyOeeData`
 
 **`useOeeCascade(filters)`**
+
 - Fetches cascade data for waterfall chart (TF → TNV)
 - Returns: `OeeCascadeData` with time hierarchy
 
 **`useOeeCalculation()`**
+
 - Mutation hook for calculating OEE in real-time
 - Used in production record form
 
 ### Records Hooks (`src/hooks/useRecords.ts`)
 
 **`useRecords(filters)`**
+
 - Fetches historical OEE records
 - Supports pagination, filtering, sorting
 - Returns: `{ records: OeeRecord[], total: number }`
 
 **`useCreateRecord()`**
+
 - Creates new OEE record
 - Automatically invalidates records cache
 
 **`useExportRecords()`**
+
 - Exports records to CSV
 - Applies current filters
 
 ### Integration Hooks (`src/hooks/useIntegrations.ts`)
 
 **`useIntegrationStatus()`**
+
 - Monitors integration health and status
 - Auto-refetches every 30 seconds
 
 **`useTestConnection()`**
+
 - Tests integration connection
 - Invalidates status cache on success
 
 **`useHealthCheck()`**
+
 - Basic backend health check
 - Runs on app initialization
 
@@ -118,7 +131,7 @@ function Dashboard() {
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState error={error} />;
-  
+
   return <OeeTrendChart data={data} />;
 }
 ```
@@ -150,9 +163,9 @@ import { useIntegrationStatus } from '@/hooks/useIntegrations';
 
 function IntegrationsPanel() {
   const { data: integrations } = useIntegrationStatus();
-  
+
   const activeCount = integrations?.filter(i => i.status === 'active').length;
-  
+
   return <div>Active: {activeCount}</div>;
 }
 ```
@@ -163,13 +176,13 @@ All API errors are handled centrally by `handleApiError()` in `src/lib/apiConfig
 
 ### Error Responses
 
-| Status | Message | Action |
-|--------|---------|--------|
-| 401 | API Key inválida o expirada | Check VITE_API_KEY secret |
-| 403 | Acceso denegado | Verify permissions |
-| 429 | Límite de requests excedido | Wait and retry |
-| 500 | Error en el servidor | Backend issue, retry |
-| Network | Error de conexión | Check internet connection |
+| Status  | Message                     | Action                    |
+| ------- | --------------------------- | ------------------------- |
+| 401     | API Key inválida o expirada | Check VITE_API_KEY secret |
+| 403     | Acceso denegado             | Verify permissions        |
+| 429     | Límite de requests excedido | Wait and retry            |
+| 500     | Error en el servidor        | Backend issue, retry      |
+| Network | Error de conexión           | Check internet connection |
 
 Errors are displayed to users via `sonner` toast notifications.
 
@@ -184,6 +197,7 @@ React Query cache configuration (in `src/lib/queryClient.ts`):
 ### Cache Invalidation
 
 Cache is automatically invalidated on:
+
 - Successful mutations (create, update, delete)
 - Manual refresh by user
 - Integration status changes
@@ -193,6 +207,7 @@ Cache is automatically invalidated on:
 ### Mock Data Fallback
 
 Components maintain mock data as fallback when:
+
 - API is unreachable
 - Development mode is enabled
 - VITE_API_KEY is not configured
@@ -200,6 +215,7 @@ Components maintain mock data as fallback when:
 ### Data Source Indicators
 
 Components display badges indicating data source:
+
 - 🟢 **LIVE** - Real data from API
 - 🟡 **MOCK** - Fallback mock data
 - 🔴 **ERROR** - API error occurred
@@ -209,6 +225,7 @@ Components display badges indicating data source:
 ### Health Check
 
 Verify backend connection:
+
 ```typescript
 import { useHealthCheck } from '@/hooks/useIntegrations';
 
@@ -219,6 +236,7 @@ const { data } = useHealthCheck();
 ### Endpoint Validation
 
 Test each endpoint:
+
 ```bash
 # Health check
 curl https://factory-os-backend.replit.app/api/v1/health
@@ -237,6 +255,7 @@ curl https://factory-os-backend.replit.app/integration/export?format=ts
 **Problem**: Import errors for `apiClient.ts`
 
 **Solution**:
+
 ```bash
 sh scripts/update-api-client.sh
 ```
@@ -246,6 +265,7 @@ sh scripts/update-api-client.sh
 **Problem**: API Key invalid
 
 **Solution**:
+
 1. Verify `VITE_API_KEY` secret is set
 2. Check API key is valid in backend
 3. Regenerate API key if needed
@@ -255,6 +275,7 @@ sh scripts/update-api-client.sh
 **Problem**: Cannot connect to backend
 
 **Solution**:
+
 1. Check backend is running at https://factory-os-backend.replit.app
 2. Verify CORS is configured correctly
 3. Check browser console for CORS errors
@@ -264,6 +285,7 @@ sh scripts/update-api-client.sh
 **Problem**: Real data not loading
 
 **Solution**:
+
 1. Check `VITE_API_KEY` is configured
 2. Verify hooks are implemented in components
 3. Check browser console for API errors
@@ -289,6 +311,7 @@ This ensures the SDK is always up-to-date before building.
 ### Manual Build
 
 To build with fresh SDK:
+
 ```bash
 npm run prebuild
 npm run build
@@ -312,6 +335,7 @@ npm run build
 ## Support
 
 For issues with:
+
 - **Backend API**: Contact FactoryOS DevOps team
 - **Frontend Integration**: Check this documentation and browser console
 - **SDK Updates**: Run `sh scripts/update-api-client.sh`
@@ -319,6 +343,7 @@ For issues with:
 ## Changelog
 
 ### v2.0 (Current)
+
 - Initial integration with FactoryOS backend
 - Auto-generated TypeScript SDK
 - React Query hooks for all endpoints
