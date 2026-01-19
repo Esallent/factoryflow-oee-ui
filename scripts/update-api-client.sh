@@ -3,6 +3,7 @@
 echo "🔄 Updating API Client SDK from FactoryOS backend..."
 
 # Download the TypeScript SDK from the backend
+//curl -s https://factory-os-backend.replit.app/integration/export?format=ts > src/lib/apiClient.ts
 curl -s https://85563b9aa0ff.ngrok-free.app/integration/export?format=ts > src/lib/apiClient.ts
 
 # Check if the download was successful
