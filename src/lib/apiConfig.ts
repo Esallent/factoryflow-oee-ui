@@ -2,7 +2,7 @@ import { toast } from "sonner";
 
 export const API_CONFIG = {
   //baseUrl: 'https://factory-os-backend.replit.app',
-  baseUrl: 'https://project-b49a951e-b470-4e35-aff-229024159082.us-central1.run.app'
+  baseUrl: 'https://project-b49a951e-b470-4e35-aff-229024159082.us-central1.run.app',
   apiKey: import.meta.env.VITE_API_KEY,
   headers: {
     'Content-Type': 'application/json',
